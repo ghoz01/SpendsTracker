@@ -1,204 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Money In-Out Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Nunito', sans-serif; margin: 20px; background:#000; display:flex; gap:40px; color:#fff; text-shadow: 0 0 2px #fff; }
-    h2, h3, label, span, option, select, button { text-shadow: 0 0 2px #fff; }
-    h2, h3 { color:#fff; font-weight:400; }
-    .left-panel { flex:1; }
-    .right-panel { flex:1; border-left:2px solid #333; padding-left:20px; }
-    .container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-    select, input[type="number"], input[type="text"], input[type="search"], input[type="date"] {
-      padding: 10px;
-      font-size:18px;
-      border-radius:4px;
-      border:none;
-      background:#222;
-      color:#fff;
-      font-weight:400;
-      text-shadow: 0 0 2px #fff;
-      font-family: 'Nunito', sans-serif;
-    }
-    select { width: 120px; }
-    input[type="number"], input[type="text"] { width: 150px; }
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1);
-    }
-    input::placeholder { color:#888; text-shadow:none; }
-    .total { font-weight: 400; font-size: 32px; margin-top: 20px; color:#fff; background:#000; padding:10px 20px; display:inline-block; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); text-shadow: 0 0 2px #fff; }
-    .history { margin-top:20px; background:#111; padding:10px; border-radius:8px; }
-    .history h3 { margin-bottom:10px; color:#fff; font-weight:400; text-shadow: 0 0 2px #fff; }
-    .filters { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-    .history-headers { display:flex; justify-content:space-between; font-size:16px; color:#aaa; padding:4px 8px; border-bottom:1px solid #333; text-shadow: 0 0 2px #fff; }
-    .month-section { margin-bottom: 15px; }
-    .month-title { font-size:20px; margin-top:10px; color:#aaa; font-weight:400; text-shadow: 0 0 2px #fff; }
-    .history-item { display:flex; justify-content:space-between; cursor:pointer; padding:8px; border-bottom:1px solid #333; color:#ccc; font-weight:400; text-shadow: 0 0 2px #fff; }
-    .history-item:nth-child(even) { background:#222; }
-    .history-item:hover { background:#333; color:#fff; }
-    .amount-glow-in { color:#00ff7f; text-shadow: 0 0 2px #00ff7f, 0 0 4px #00ff7f; }
-    .amount-glow-out { color:#ff4d4d; text-shadow: 0 0 2px #ff4d4d, 0 0 4px #ff4d4d; }
-    .note-display { margin-top:20px; font-style:italic; background:#111; padding:10px; border-radius:8px; color:#fff; font-weight:400; text-shadow: 0 0 2px #fff; }
-    .search-box { margin-bottom:10px; }
-    .summary-total { margin-top:10px; font-size:20px; font-weight:400; color:#fff; text-align:right; text-shadow: 0 0 2px #fff; }
-    .choice-buttons { display:flex; gap:10px; margin-top:10px; }
-    .choice-buttons button { padding:10px 20px; font-size:18px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer; opacity:0.6; text-shadow: 0 0 2px #fff; }
-    .choice-buttons button.active { background:#28a745; opacity:1; }
-    .choice-buttons button:hover { background:#666; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Money In-Out Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  body{font-family:'Nunito',sans-serif;margin:20px;background:#000;display:flex;gap:40px;color:#fff;text-shadow:0 0 2px #fff;}
+  h2,h3,label,span,option,select,button{text-shadow:0 0 2px #fff;}
+  h2,h3{color:#fff;font-weight:400;}
+  .left-panel{flex:1;}
+  .right-panel{flex:1;border-left:2px solid #333;padding-left:20px;display:flex;flex-direction:column;}
+  .container{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  select,input[type="number"],input[type="text"],input[type="search"],input[type="date"]{padding:10px;font-size:18px;border-radius:4px;border:none;background:#222;color:#fff;font-weight:400;text-shadow:0 0 2px #fff;font-family:'Nunito',sans-serif;}
+  select{width:120px;}
+  input[type="number"],input[type="text"]{width:150px;}
+  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);}
+  input::placeholder{color:#888;text-shadow:none;}
+  .total{font-weight:400;font-size:32px;margin-top:20px;color:#fff;background:#000;padding:10px 20px;display:inline-block;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.8);text-shadow:0 0 2px #fff;}
+  .choice-buttons{display:flex;gap:10px;margin-top:10px;}
+  .choice-buttons button{padding:10px 20px;font-size:18px;background:#444;color:#fff;border:none;border-radius:6px;cursor:pointer;opacity:0.6;text-shadow:0 0 2px #fff;}
+  .choice-buttons button.active{background:#28a745;opacity:1;}
+  .choice-buttons button:hover{background:#666;}
+  .history{margin-top:20px;background:#111;padding:10px;border-radius:8px;}
+  .history h3{font-size:24px;color:#0ff;text-shadow:0 0 4px #0ff;}
+  .history-filters{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .export-btn{padding:10px 20px;font-size:16px;background:#333;color:#fff;border:none;border-radius:6px;cursor:pointer;text-shadow:0 0 1px #fff;transition:background 0.3s;}
+  .export-btn:hover{background:#555;}
+  .history-headers{display:flex;justify-content:space-between;font-size:16px;color:#aaa;padding:4px 8px;border-bottom:1px solid #333;text-shadow:0 0 2px #fff;}
+  .history-item{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px;border-bottom:1px solid #333;color:#ccc;font-weight:400;text-shadow:0 0 2px #fff;}
+  .history-item:nth-child(even){background:#222;}
+  .history-item:hover{background:#333;color:#fff;}
+  .amount-glow-in{color:#00ff7f;text-shadow:0 0 2px #00ff7f,0 0 4px #00ff7f;}
+  .amount-glow-out{color:#ff4d4d;text-shadow:0 0 2px #ff4d4d,0 0 4px #ff4d4d;}
+  .edit-btn,.delete-btn{margin-left:8px;cursor:pointer;font-size:18px;}
+  .edit-btn:hover{color:#0ff;}
+  .delete-btn:hover{color:#f00;}
+  .note-display-wrapper{margin-top:20px;background:#111;padding:15px;border-radius:8px;}
+  .note-display-title{font-size:22px;font-weight:600;margin-bottom:10px;color:#0ff;text-shadow:0 0 4px #0ff;}
+  .note-display{font-size:20px;font-style:italic;background:#222;padding:15px;border-radius:8px;color:#fff;font-weight:500;text-shadow:0 0 3px #fff;}
+</style>
 </head>
 <body>
-  <div class="left-panel">
-    <h2>Daily Money In-Out Tracker</h2>
-    <div class="container">
-      <input type="number" id="amountInput" placeholder="Enter amount" />
-      <select id="currencySelect">
-        <option value="₺">₺</option>
-        <option value="$">$</option>
-        <option value="€">€</option>
+<div class="left-panel">
+  <h2>Daily Money In-Out Tracker</h2>
+  <div class="container">
+    <input type="number" id="amountInput" placeholder="Enter amount" />
+    <select id="currencySelect">
+      <option value="₺">₺</option>
+      <option value="$">$</option>
+      <option value="€">€</option>
+    </select>
+    <input type="text" id="noteInput" placeholder="Optional note" />
+  </div>
+  <div class="choice-buttons">
+    <button id="moneyInBtn">Money In</button>
+    <button id="moneyOutBtn">Money Out</button>
+  </div>
+  <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
+  <div class="history">
+    <h3>History</h3>
+    <div class="history-filters">
+      <input type="search" id="historySearch" placeholder="Search time, amount, note, type...">
+      <input type="date" id="historyDate">
+      <select id="historyType">
+        <option value="all">All</option>
+        <option value="in">In</option>
+        <option value="out">Out</option>
       </select>
-      <input type="text" id="noteInput" placeholder="Optional note" />
+      <button class="export-btn" onclick="exportPDF()">📄 Export PDF</button>
     </div>
-    <div class="choice-buttons">
-      <button id="moneyInBtn">Money In</button>
-      <button id="moneyOutBtn">Money Out</button>
-    </div>
-    <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
-    <div class="history">
-      <h3>History</h3>
-      <div class="filters">
-        <input class="search-box" type="search" id="searchInput" placeholder="Search..." oninput="renderHistory()" />
-        <select id="filterType" onchange="renderHistory()">
-          <option value="all">All Types</option>
-          <option value="in">In</option>
-          <option value="out">Out</option>
-        </select>
-        <select id="filterCurrency" onchange="renderHistory()">
-          <option value="all">All Currencies</option>
-          <option value="₺">₺</option>
-          <option value="$">$</option>
-          <option value="€">€</option>
-        </select>
-        <input type="date" id="filterDate" onchange="renderHistory()" />
-        <select id="sortOrder" onchange="renderHistory()">
-          <option value="desc">Newest First</option>
-          <option value="asc">Oldest First</option>
-        </select>
-      </div>
-      <div class="history-headers"><span>Time</span><span>Type</span><span>Amount</span></div>
-      <div id="historyList"></div>
-      <div class="summary-total" id="summaryTotal"></div>
-    </div>
+    <div class="history-headers"><span>Time</span><span>Type</span><span>Amount</span><span>Actions</span></div>
+    <div id="historyList"></div>
   </div>
-  <div class="right-panel">
-    <h3>Note Viewer</h3>
-    <div class="note-display" id="noteDisplay">Click on an entry to see its note.</div>
+  <div class="note-display-wrapper">
+    <div class="note-display-title" id="noteTitle">Select an entry to view details</div>
+    <div class="note-display" id="noteDisplay">No note selected.</div>
   </div>
+</div>
+<script>
+let total=0;
+let history=[];
+let currentCurrency='₺';
+let currentType=null;
+let editIndex=null;
 
-  <script>
-    let total = 0;
-    let history = [];
-    let currentCurrency = '₺';
-    let currentType = null;
+const moneyInBtn=document.getElementById('moneyInBtn');
+const moneyOutBtn=document.getElementById('moneyOutBtn');
 
-    document.getElementById('currencySelect').addEventListener('change', function() {
-      currentCurrency = this.value;
-      document.getElementById('currencyDisplay').textContent = currentCurrency;
-      renderHistory();
-    });
+moneyInBtn.addEventListener('click',()=>{currentType='in';moneyInBtn.classList.add('active');moneyOutBtn.classList.remove('active');});
+moneyOutBtn.addEventListener('click',()=>{currentType='out';moneyOutBtn.classList.add('active');moneyInBtn.classList.remove('active');});
 
-    const moneyInBtn = document.getElementById('moneyInBtn');
-    const moneyOutBtn = document.getElementById('moneyOutBtn');
+document.getElementById('currencySelect').addEventListener('change',function(){currentCurrency=this.value;document.getElementById('currencyDisplay').textContent=currentCurrency;});
 
-    moneyInBtn.addEventListener('click', function(){
-      currentType = 'in';
-      moneyInBtn.classList.add('active');
-      moneyOutBtn.classList.remove('active');
-    });
+function processOperation(op,value){
+ if(editIndex!==null&&history[editIndex]){
+   const oldItem=history[editIndex];
+   total-=oldItem.operation==='+'?oldItem.value:-oldItem.value;
+   oldItem.value=value;
+   oldItem.operation=op;
+   oldItem.currency=currentCurrency;
+   oldItem.note=document.getElementById('noteInput').value.trim();
+   oldItem.timestamp=new Date();
+   total+=op==='+'?value:-value;
+   editIndex=null;
+ }else{
+   if(op==='+')total+=value;else total-=value;
+   history.push({value,operation:op,timestamp:new Date(),note:document.getElementById('noteInput').value.trim(),currency:currentCurrency});
+ }
+ document.getElementById('total').innerText=total;
+ document.getElementById('amountInput').value='';
+ document.getElementById('noteInput').value='';
+ renderHistory();
+}
 
-    moneyOutBtn.addEventListener('click', function(){
-      currentType = 'out';
-      moneyOutBtn.classList.add('active');
-      moneyInBtn.classList.remove('active');
-    });
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const val=parseFloat(document.getElementById('amountInput').value);if(!isNaN(val)&&currentType){const op=currentType==='in'?'+':'-';processOperation(op,val);}else{alert('Select Money In or Money Out and enter amount');}}});
 
-    function processOperation(op, value){
-      if(op === '+') total += value; else total -= value;
-      const now = new Date();
-      history.push({ value, operation: op, timestamp: now, note: document.getElementById('noteInput').value.trim(), currency: currentCurrency });
-      renderHistory();
-      document.getElementById('total').innerText = total;
-      document.getElementById('currencyDisplay').textContent = currentCurrency;
-      document.getElementById('amountInput').value = '';
-      document.getElementById('noteInput').value = '';
-      document.getElementById('amountInput').focus();
-    }
+document.getElementById('historySearch').addEventListener('input',renderHistory);
+document.getElementById('historyDate').addEventListener('change',renderHistory);
+document.getElementById('historyType').addEventListener('change',renderHistory);
 
-    function renderHistory(){
-      const list = document.getElementById('historyList');
-      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-      const typeFilter = document.getElementById('filterType').value;
-      const currencyFilter = document.getElementById('filterCurrency').value;
-      const dateFilter = document.getElementById('filterDate').value;
-      const sortOrder = document.getElementById('sortOrder').value;
+function renderHistory(){const list=document.getElementById('historyList');list.innerHTML='';const query=document.getElementById('historySearch').value.toLowerCase();const dateFilter=document.getElementById('historyDate').value;const typeFilter=document.getElementById('historyType').value;history.forEach((item,idx)=>{const time=item.timestamp.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});const type=item.operation==='+'?'in':'out';const matchesQuery=time.toLowerCase().includes(query)||item.note.toLowerCase().includes(query)||String(item.value).includes(query)||type.includes(query);const matchesDate=!dateFilter||item.timestamp.toISOString().slice(0,10)===dateFilter;const matchesType=(typeFilter==='all')||(type===typeFilter);if(matchesQuery&&matchesDate&&matchesType){const glowClass=item.operation==='+'?'amount-glow-in':'amount-glow-out';const displayAmount=`<span class='${glowClass}'>${item.value} ${item.currency}</span>`;const div=document.createElement('div');div.className='history-item';div.innerHTML=`<span>${time}</span><span>${type==='in'?'In':'Out'}</span><span>${displayAmount}</span><span><span class='edit-btn' onclick='editEntry(${idx})'>✏️</span><span class='delete-btn' onclick='deleteEntry(${idx})'>🗑️</span></span>`;div.onclick=()=>showNote(idx);list.appendChild(div);}});}
 
-      list.innerHTML = '';
-      let filteredEntries = history.filter(entry => {
-        const timeText = entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const typeText = entry.operation === '+' ? 'in' : 'out';
-        const entryDate = entry.timestamp.toISOString().split('T')[0];
-        if (typeFilter !== 'all' && typeText !== typeFilter) return false;
-        if (currencyFilter !== 'all' && entry.currency !== currencyFilter) return false;
-        if (dateFilter && entryDate !== dateFilter) return false;
-        if (searchQuery && !timeText.toLowerCase().includes(searchQuery) && !typeText.includes(searchQuery) && !(entry.note && entry.note.toLowerCase().includes(searchQuery))) return false;
-        return true;
-      });
+function showNote(index){const item=history[index];if(!item)return;const time=item.timestamp.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});const type=item.operation==='+'?'In':'Out';const amount=`${item.value} ${item.currency}`;document.getElementById('noteTitle').textContent=`Details for ${amount} (${type} at ${time})`;document.getElementById('noteDisplay').textContent=item.note?item.note:'No note was added for this entry.';}
 
-      filteredEntries.sort((a, b) => {
-        if(sortOrder === 'asc'){
-          return a.timestamp - b.timestamp;
-        } else {
-          return b.timestamp - a.timestamp;
-        }
-      });
+function editEntry(index){event.stopPropagation();const item=history[index];document.getElementById('amountInput').value=item.value;document.getElementById('noteInput').value=item.note;document.getElementById('currencySelect').value=item.currency;currentCurrency=item.currency;currentType=item.operation==='+'?'in':'out';moneyInBtn.classList.toggle('active',currentType==='in');moneyOutBtn.classList.toggle('active',currentType==='out');editIndex=index;}
 
-      let sum = 0;
-      filteredEntries.forEach((item, idx) => {
-        const timeText = item.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const typeText = item.operation === '+' ? 'In' : 'Out';
-        const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
-        const displayAmount = `<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
-        sum += item.value * (item.operation === '+' ? 1 : -1);
-        const div = document.createElement('div');
-        div.className = 'history-item';
-        div.innerHTML = `<span>${timeText}</span><span>${typeText}</span><span>${displayAmount}</span>`;
-        div.onclick = () => showNote(history.indexOf(item));
-        list.appendChild(div);
-      });
-      document.getElementById('summaryTotal').innerText = `Filtered Total: ${sum}`;
-    }
+function deleteEntry(index){event.stopPropagation();const item=history[index];total-=item.operation==='+'?item.value:-item.value;history.splice(index,1);document.getElementById('total').innerText=total;renderHistory();}
 
-    function showNote(index){
-      const item = history[index];
-      document.getElementById('noteDisplay').textContent = item.note ? `Note: ${item.note}` : 'No note was added for this entry.';
-    }
-
-    function handleEnter(){
-      const val = parseFloat(document.getElementById('amountInput').value);
-      if(!isNaN(val) && currentType){
-        const op = currentType === 'in' ? '+' : '-';
-        processOperation(op, val);
-      }
-    }
-
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Enter'){
-        handleEnter();
-      }
-    });
-  </script>
+function exportPDF(){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.setFontSize(14);doc.text("Filtered History",10,10);let y=20;const query=document.getElementById('historySearch').value.toLowerCase();const dateFilter=document.getElementById('historyDate').value;const typeFilter=document.getElementById('historyType').value;history.forEach(item=>{const time=item.timestamp.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});const type=item.operation==='+'?'in':'out';const matchesQuery=time.toLowerCase().includes(query)||item.note.toLowerCase().includes(query)||String(item.value).includes(query)||type.includes(query);const matchesDate=!dateFilter||item.timestamp.toISOString().slice(0,10)===dateFilter;const matchesType=(typeFilter==='all')||(type===typeFilter);if(matchesQuery&&matchesDate&&matchesType){doc.text(`${time} | ${type.toUpperCase()} | ${item.value} ${item.currency} | ${item.note||''}`,10,y);y+=10;}});doc.save('history.pdf');}
+</script>
 </body>
 </html>
