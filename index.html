@@ -1,45 +1,204 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Günlük Harcama Takibi</title>
+  <title>Daily Money In-Out Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9; }
-    .container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-    input[type="number"] { width: 120px; padding: 8px; font-size:16px; border-radius:6px; border:1px solid #ccc; }
-    button { padding: 8px 14px; font-size: 18px; border:none; border-radius:6px; cursor:pointer; }
-    button:hover { background:#eee; }
-    .toplam { font-weight: bold; font-size: 22px; margin-top: 20px; color:#333; }
+    body { font-family: 'Nunito', sans-serif; margin: 20px; background:#000; display:flex; gap:40px; color:#fff; text-shadow: 0 0 2px #fff; }
+    h2, h3, label, span, option, select, button { text-shadow: 0 0 2px #fff; }
+    h2, h3 { color:#fff; font-weight:400; }
+    .left-panel { flex:1; }
+    .right-panel { flex:1; border-left:2px solid #333; padding-left:20px; }
+    .container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    select, input[type="number"], input[type="text"], input[type="search"], input[type="date"] {
+      padding: 10px;
+      font-size:18px;
+      border-radius:4px;
+      border:none;
+      background:#222;
+      color:#fff;
+      font-weight:400;
+      text-shadow: 0 0 2px #fff;
+      font-family: 'Nunito', sans-serif;
+    }
+    select { width: 120px; }
+    input[type="number"], input[type="text"] { width: 150px; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+    input::placeholder { color:#888; text-shadow:none; }
+    .total { font-weight: 400; font-size: 32px; margin-top: 20px; color:#fff; background:#000; padding:10px 20px; display:inline-block; border-radius:8px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); text-shadow: 0 0 2px #fff; }
+    .history { margin-top:20px; background:#111; padding:10px; border-radius:8px; }
+    .history h3 { margin-bottom:10px; color:#fff; font-weight:400; text-shadow: 0 0 2px #fff; }
+    .filters { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .history-headers { display:flex; justify-content:space-between; font-size:16px; color:#aaa; padding:4px 8px; border-bottom:1px solid #333; text-shadow: 0 0 2px #fff; }
+    .month-section { margin-bottom: 15px; }
+    .month-title { font-size:20px; margin-top:10px; color:#aaa; font-weight:400; text-shadow: 0 0 2px #fff; }
+    .history-item { display:flex; justify-content:space-between; cursor:pointer; padding:8px; border-bottom:1px solid #333; color:#ccc; font-weight:400; text-shadow: 0 0 2px #fff; }
+    .history-item:nth-child(even) { background:#222; }
+    .history-item:hover { background:#333; color:#fff; }
+    .amount-glow-in { color:#00ff7f; text-shadow: 0 0 2px #00ff7f, 0 0 4px #00ff7f; }
+    .amount-glow-out { color:#ff4d4d; text-shadow: 0 0 2px #ff4d4d, 0 0 4px #ff4d4d; }
+    .note-display { margin-top:20px; font-style:italic; background:#111; padding:10px; border-radius:8px; color:#fff; font-weight:400; text-shadow: 0 0 2px #fff; }
+    .search-box { margin-bottom:10px; }
+    .summary-total { margin-top:10px; font-size:20px; font-weight:400; color:#fff; text-align:right; text-shadow: 0 0 2px #fff; }
+    .choice-buttons { display:flex; gap:10px; margin-top:10px; }
+    .choice-buttons button { padding:10px 20px; font-size:18px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer; opacity:0.6; text-shadow: 0 0 2px #fff; }
+    .choice-buttons button.active { background:#28a745; opacity:1; }
+    .choice-buttons button:hover { background:#666; }
   </style>
 </head>
 <body>
-  <h2>Günlük Harcama Takibi</h2>
-  <div class="container">
-    <input type="number" id="tutarInput" placeholder="Tutar gir" />
-    <button onclick="islemYap('+')">+</button>
-    <button onclick="islemYap('-')">-</button>
+  <div class="left-panel">
+    <h2>Daily Money In-Out Tracker</h2>
+    <div class="container">
+      <input type="number" id="amountInput" placeholder="Enter amount" />
+      <select id="currencySelect">
+        <option value="₺">₺</option>
+        <option value="$">$</option>
+        <option value="€">€</option>
+      </select>
+      <input type="text" id="noteInput" placeholder="Optional note" />
+    </div>
+    <div class="choice-buttons">
+      <button id="moneyInBtn">Money In</button>
+      <button id="moneyOutBtn">Money Out</button>
+    </div>
+    <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
+    <div class="history">
+      <h3>History</h3>
+      <div class="filters">
+        <input class="search-box" type="search" id="searchInput" placeholder="Search..." oninput="renderHistory()" />
+        <select id="filterType" onchange="renderHistory()">
+          <option value="all">All Types</option>
+          <option value="in">In</option>
+          <option value="out">Out</option>
+        </select>
+        <select id="filterCurrency" onchange="renderHistory()">
+          <option value="all">All Currencies</option>
+          <option value="₺">₺</option>
+          <option value="$">$</option>
+          <option value="€">€</option>
+        </select>
+        <input type="date" id="filterDate" onchange="renderHistory()" />
+        <select id="sortOrder" onchange="renderHistory()">
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </select>
+      </div>
+      <div class="history-headers"><span>Time</span><span>Type</span><span>Amount</span></div>
+      <div id="historyList"></div>
+      <div class="summary-total" id="summaryTotal"></div>
+    </div>
   </div>
-  <div class="toplam">Toplam: <span id="toplam">0</span> TL</div>
+  <div class="right-panel">
+    <h3>Note Viewer</h3>
+    <div class="note-display" id="noteDisplay">Click on an entry to see its note.</div>
+  </div>
 
   <script>
-    let toplam = 0;
+    let total = 0;
+    let history = [];
+    let currentCurrency = '₺';
+    let currentType = null;
 
-    function islemYap(islem) {
-      const tutarInput = document.getElementById('tutarInput');
-      let girilenTutar = parseFloat(tutarInput.value);
-      if (isNaN(girilenTutar)) return;
+    document.getElementById('currencySelect').addEventListener('change', function() {
+      currentCurrency = this.value;
+      document.getElementById('currencyDisplay').textContent = currentCurrency;
+      renderHistory();
+    });
 
-      if (islem === '+') {
-        toplam += girilenTutar;
-      } else if (islem === '-') {
-        toplam -= girilenTutar;
-      }
+    const moneyInBtn = document.getElementById('moneyInBtn');
+    const moneyOutBtn = document.getElementById('moneyOutBtn');
 
-      document.getElementById('toplam').innerText = toplam;
-      tutarInput.value = '';
-      tutarInput.focus();
+    moneyInBtn.addEventListener('click', function(){
+      currentType = 'in';
+      moneyInBtn.classList.add('active');
+      moneyOutBtn.classList.remove('active');
+    });
+
+    moneyOutBtn.addEventListener('click', function(){
+      currentType = 'out';
+      moneyOutBtn.classList.add('active');
+      moneyInBtn.classList.remove('active');
+    });
+
+    function processOperation(op, value){
+      if(op === '+') total += value; else total -= value;
+      const now = new Date();
+      history.push({ value, operation: op, timestamp: now, note: document.getElementById('noteInput').value.trim(), currency: currentCurrency });
+      renderHistory();
+      document.getElementById('total').innerText = total;
+      document.getElementById('currencyDisplay').textContent = currentCurrency;
+      document.getElementById('amountInput').value = '';
+      document.getElementById('noteInput').value = '';
+      document.getElementById('amountInput').focus();
     }
+
+    function renderHistory(){
+      const list = document.getElementById('historyList');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const typeFilter = document.getElementById('filterType').value;
+      const currencyFilter = document.getElementById('filterCurrency').value;
+      const dateFilter = document.getElementById('filterDate').value;
+      const sortOrder = document.getElementById('sortOrder').value;
+
+      list.innerHTML = '';
+      let filteredEntries = history.filter(entry => {
+        const timeText = entry.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const typeText = entry.operation === '+' ? 'in' : 'out';
+        const entryDate = entry.timestamp.toISOString().split('T')[0];
+        if (typeFilter !== 'all' && typeText !== typeFilter) return false;
+        if (currencyFilter !== 'all' && entry.currency !== currencyFilter) return false;
+        if (dateFilter && entryDate !== dateFilter) return false;
+        if (searchQuery && !timeText.toLowerCase().includes(searchQuery) && !typeText.includes(searchQuery) && !(entry.note && entry.note.toLowerCase().includes(searchQuery))) return false;
+        return true;
+      });
+
+      filteredEntries.sort((a, b) => {
+        if(sortOrder === 'asc'){
+          return a.timestamp - b.timestamp;
+        } else {
+          return b.timestamp - a.timestamp;
+        }
+      });
+
+      let sum = 0;
+      filteredEntries.forEach((item, idx) => {
+        const timeText = item.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const typeText = item.operation === '+' ? 'In' : 'Out';
+        const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
+        const displayAmount = `<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
+        sum += item.value * (item.operation === '+' ? 1 : -1);
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<span>${timeText}</span><span>${typeText}</span><span>${displayAmount}</span>`;
+        div.onclick = () => showNote(history.indexOf(item));
+        list.appendChild(div);
+      });
+      document.getElementById('summaryTotal').innerText = `Filtered Total: ${sum}`;
+    }
+
+    function showNote(index){
+      const item = history[index];
+      document.getElementById('noteDisplay').textContent = item.note ? `Note: ${item.note}` : 'No note was added for this entry.';
+    }
+
+    function handleEnter(){
+      const val = parseFloat(document.getElementById('amountInput').value);
+      if(!isNaN(val) && currentType){
+        const op = currentType === 'in' ? '+' : '-';
+        processOperation(op, val);
+      }
+    }
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        handleEnter();
+      }
+    });
   </script>
 </body>
 </html>
