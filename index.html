@@ -105,6 +105,7 @@
     document.getElementById('currencySelect').addEventListener('change', function () {
       currentCurrency = this.value;
       document.getElementById('currencyDisplay').textContent = currentCurrency;
+      saveHistoryToLocal();
     });
 
     function processOperation(op, value) {
@@ -115,7 +116,7 @@
         oldItem.operation = op;
         oldItem.currency = currentCurrency;
         oldItem.note = document.getElementById('noteInput').value.trim();
-        oldItem.timestamp = new Date();
+        oldItem.timestamp = new Date().toISOString();
         total += op === '+' ? value : -value;
         editIndex = null;
       } else {
@@ -124,7 +125,7 @@
         history.push({
           value,
           operation: op,
-          timestamp: new Date().toISOString(), // store as ISO string
+          timestamp: new Date().toISOString(),
           note: document.getElementById('noteInput').value.trim(),
           currency: currentCurrency
         });
@@ -152,7 +153,7 @@
       const list = document.getElementById('historyList');
       list.innerHTML = '';
       history.forEach((item, idx) => {
-        const dateObj = new Date(item.timestamp); // ensure it's a Date
+        const dateObj = new Date(item.timestamp);
         const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const type = item.operation === '+' ? 'in' : 'out';
         const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
@@ -176,21 +177,50 @@
       document.getElementById('noteDisplay').textContent = item.note || 'No note was added for this entry.';
     }
 
-    function saveHistoryToLocal(){
-      localStorage.setItem('moneyHistory', JSON.stringify(history));
+    function editEntry(index) {
+      const item = history[index];
+      document.getElementById('amountInput').value = item.value;
+      document.getElementById('noteInput').value = item.note;
+      document.getElementById('currencySelect').value = item.currency;
+      currentCurrency = item.currency;
+      currentType = item.operation === '+' ? 'in' : 'out';
+      moneyInBtn.classList.toggle('active', currentType === 'in');
+      moneyOutBtn.classList.toggle('active', currentType === 'out');
+      editIndex = index;
     }
 
-    function loadHistoryFromLocal(){
-      const data = localStorage.getItem('moneyHistory');
-      if(data){
+    function deleteEntry(index) {
+      const item = history[index];
+      total -= item.operation === '+' ? item.value : -item.value;
+      history.splice(index, 1);
+      document.getElementById('total').innerText = total;
+      renderHistory();
+      saveHistoryToLocal();
+    }
+
+    function saveHistoryToLocal() {
+      const data = {
+        total,
+        currentCurrency,
+        history
+      };
+      localStorage.setItem('moneyTrackerData', JSON.stringify(data));
+    }
+
+    function loadHistoryFromLocal() {
+      const data = localStorage.getItem('moneyTrackerData');
+      if (data) {
         const parsed = JSON.parse(data);
-        // ensure timestamps are valid date strings
-        history = parsed;
+        total = parsed.total || 0;
+        currentCurrency = parsed.currentCurrency || '₺';
+        history = parsed.history || [];
+        document.getElementById('total').innerText = total;
+        document.getElementById('currencyDisplay').textContent = currentCurrency;
         renderHistory();
       }
     }
 
-    function exportExcel(){
+    function exportExcel() {
       const worksheetData = history.map(item => {
         const dateObj = new Date(item.timestamp);
         return {
