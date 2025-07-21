@@ -66,6 +66,7 @@
       <button id="moneyOutBtn">Money Out</button>
     </div>
     <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
+    <div id="alertBox" style="position:fixed;top:20px;right:20px;background:#222;color:#fff;padding:12px 18px;border-radius:6px;box-shadow:0 0 10px rgba(255,255,255,0.5);display:none;z-index:9999;font-size:16px;"></div>
     <div class="history">
       <h3>History</h3>
       <div class="history-filters">
@@ -93,191 +94,158 @@
       let currentCurrency = '₺';
       let currentType = null;
       let editIndex = null;
+      const alertBox = document.getElementById('alertBox');
+
+      function showAlert(msg){
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+        setTimeout(()=>{ alertBox.style.display = 'none'; }, 5000);
+      }
 
       const moneyInBtn = document.getElementById('moneyInBtn');
       const moneyOutBtn = document.getElementById('moneyOutBtn');
-      const exportExcelBtn = document.getElementById('exportExcelBtn');
-
-      moneyInBtn.addEventListener('click', () => {
-        currentType = 'in';
-        moneyInBtn.classList.add('active');
-        moneyOutBtn.classList.remove('active');
+      moneyInBtn.addEventListener('click', ()=>{
+        currentType='in';moneyInBtn.classList.add('active');moneyOutBtn.classList.remove('active');
       });
-      moneyOutBtn.addEventListener('click', () => {
-        currentType = 'out';
-        moneyOutBtn.classList.add('active');
-        moneyInBtn.classList.remove('active');
+      moneyOutBtn.addEventListener('click', ()=>{
+        currentType='out';moneyOutBtn.classList.add('active');moneyInBtn.classList.remove('active');
       });
 
-      document.getElementById('currencySelect').addEventListener('change', function () {
-        currentCurrency = this.value;
-        document.getElementById('currencyDisplay').textContent = currentCurrency;
+      document.getElementById('currencySelect').addEventListener('change', function(){
+        currentCurrency=this.value;
+        document.getElementById('currencyDisplay').textContent=currentCurrency;
         saveHistoryToLocal();
       });
 
-      function processOperation(op, value) {
-        if (editIndex !== null && history[editIndex]) {
-          const oldItem = history[editIndex];
-          total -= oldItem.operation === '+' ? oldItem.value : -oldItem.value;
-          oldItem.value = value;
-          oldItem.operation = op;
-          oldItem.currency = currentCurrency;
-          oldItem.note = document.getElementById('noteInput').value.trim();
-          oldItem.timestamp = new Date().toISOString();
-          total += op === '+' ? value : -value;
-          editIndex = null;
-        } else {
-          if (op === '+') total += value; else total -= value;
-          history.push({
-            value,
-            operation: op,
-            timestamp: new Date().toISOString(),
-            note: document.getElementById('noteInput').value.trim(),
-            currency: currentCurrency
-          });
+      function processOperation(op,value){
+        if(editIndex!==null && history[editIndex]){
+          const old=history[editIndex];
+          total -= old.operation==='+'?old.value:-old.value;
+          old.value=value;old.operation=op;old.currency=currentCurrency;old.note=document.getElementById('noteInput').value.trim();old.timestamp=new Date().toISOString();
+          total += op==='+'?value:-value;
+          editIndex=null;
+        }else{
+          if(op==='+') total+=value; else total-=value;
+          history.push({value,operation:op,timestamp:new Date().toISOString(),note:document.getElementById('noteInput').value.trim(),currency:currentCurrency});
         }
-        document.getElementById('total').innerText = total;
-        document.getElementById('amountInput').value = '';
-        document.getElementById('noteInput').value = '';
+        document.getElementById('total').innerText=total;
+        document.getElementById('amountInput').value='';
+        document.getElementById('noteInput').value='';
         renderHistory();
         saveHistoryToLocal();
+        showAlert('✅ Record saved successfully.');
       }
 
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          const val = parseFloat(document.getElementById('amountInput').value);
-          if (!isNaN(val) && currentType) {
-            const op = currentType === 'in' ? '+' : '-';
-            processOperation(op, val);
-          } else {
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Enter'){
+          const val=parseFloat(document.getElementById('amountInput').value);
+          if(!isNaN(val)&&currentType){
+            const op=currentType==='in'?'+':'-';
+            processOperation(op,val);
+          }else{
             alert('Select Money In or Money Out and enter amount');
           }
         }
       });
 
-      function renderHistory() {
-        const list = document.getElementById('historyList');
-        list.innerHTML = '';
-        const searchVal = document.getElementById('historySearch').value.toLowerCase();
-        const dateVal = document.getElementById('historyDate').value;
-        const typeVal = document.getElementById('historyType').value;
-        let found = false;
-        history.forEach((item, idx) => {
-          const dateObj = new Date(item.timestamp);
-          const timeStr = dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-          const dateStrISO = dateObj.toISOString().split('T')[0];
-          const dateStrReadable = dateObj.toLocaleDateString('tr-TR');
-          const typeStr = item.operation === '+' ? 'in' : 'out';
-          const matchSearch =
-            timeStr.toLowerCase().includes(searchVal) ||
-            dateStrReadable.toLowerCase().includes(searchVal) ||
-            (item.note && item.note.toLowerCase().includes(searchVal)) ||
-            String(item.value).includes(searchVal) ||
-            typeStr.includes(searchVal);
-          const matchDate = !dateVal || dateVal === dateStrISO;
-          const matchType = (typeVal === 'all') || (typeVal === typeStr);
-          if (matchSearch && matchDate && matchType) {
-            found = true;
-            const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
-            const displayAmount = `<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `
-              <span class="time-date">
-                <span class="time">${timeStr}</span>
-                <span class="date">${dateStrReadable}</span>
-              </span>
-              <span>${typeStr === 'in' ? 'In' : 'Out'}</span>
-              <span>${displayAmount}</span>
-              <span>
-                <button class='edit-btn' data-idx='${idx}'>✏️</button>
-                <button class='delete-btn' data-idx='${idx}'>🗑️</button>
-              </span>`;
-            div.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); editEntry(idx); });
-            div.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); deleteEntry(idx); });
-            div.addEventListener('click', () => showNote(idx));
+      function renderHistory(){
+        const list=document.getElementById('historyList');list.innerHTML='';
+        const searchVal=document.getElementById('historySearch').value.toLowerCase();
+        const dateVal=document.getElementById('historyDate').value;
+        const typeVal=document.getElementById('historyType').value;
+        let found=false;
+        history.forEach((item,idx)=>{
+          const dateObj=new Date(item.timestamp);
+          const timeStr=dateObj.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+          const dateStrISO=dateObj.toISOString().split('T')[0];
+          const dateStrReadable=dateObj.toLocaleDateString('tr-TR');
+          const typeStr=item.operation==='+'?'in':'out';
+          const matchSearch=timeStr.toLowerCase().includes(searchVal)||dateStrReadable.toLowerCase().includes(searchVal)||(item.note&&item.note.toLowerCase().includes(searchVal))||String(item.value).includes(searchVal)||typeStr.includes(searchVal);
+          const matchDate=!dateVal||dateVal===dateStrISO;
+          const matchType=(typeVal==='all')||(typeVal===typeStr);
+          if(matchSearch&&matchDate&&matchType){
+            found=true;
+            const glowClass=item.operation==='+'?'amount-glow-in':'amount-glow-out';
+            const displayAmount=`<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
+            const div=document.createElement('div');div.className='history-item';
+            div.innerHTML=`<span class="time-date"><span class="time" style="font-size:12px;">${timeStr}</span><span class="date" style="font-size:10px;color:#aaa;">${dateStrReadable}</span></span><span>${typeStr==='in'?'In':'Out'}</span><span>${displayAmount}</span><span><button class='edit-btn' data-idx='${idx}'>✏️</button><button class='delete-btn' data-idx='${idx}'>🗑️</button></span>`;
+            div.querySelector('.edit-btn').addEventListener('click',e=>{e.stopPropagation();editEntry(idx);});
+            div.querySelector('.delete-btn').addEventListener('click',e=>{e.stopPropagation();deleteEntry(idx);});
+            div.addEventListener('click',()=>showNote(idx));
             list.appendChild(div);
           }
         });
-        if (!found) {
-          const noDiv = document.createElement('div');
-          noDiv.className = 'no-results';
-          noDiv.textContent = 'Eşleşen veri bulunamadı.';
-          list.appendChild(noDiv);
+        if(!found){
+          const noDiv=document.createElement('div');noDiv.className='no-results';noDiv.textContent='Eşleşen veri bulunamadı.';list.appendChild(noDiv);
         }
       }
 
-      function showNote(index) {
-        const item = history[index];
-        if (!item) return;
-        const dateObj = new Date(item.timestamp);
-        const date = dateObj.toLocaleDateString('tr-TR');
-        const type = item.operation === '+' ? 'In' : 'Out';
-        const amount = `${item.value} ${item.currency}`;
-        document.getElementById('noteTitle').textContent = `Details for ${amount} (${type} on ${date})`;
-        document.getElementById('noteDisplay').textContent = item.note || 'No note was added for this entry.';
+      function showNote(index){
+        const item=history[index];if(!item)return;
+        const dateObj=new Date(item.timestamp);
+        const date=dateObj.toLocaleDateString('tr-TR');
+        const type=item.operation==='+'?'In':'Out';
+        const amount=`${item.value} ${item.currency}`;
+        document.getElementById('noteTitle').textContent=`Details for ${amount} (${type} on ${date})`;
+        document.getElementById('noteDisplay').textContent=item.note||'No note was added for this entry.';
       }
 
-      function editEntry(index) {
-        const item = history[index];
-        document.getElementById('amountInput').value = item.value;
-        document.getElementById('noteInput').value = item.note;
-        document.getElementById('currencySelect').value = item.currency;
-        currentCurrency = item.currency;
-        currentType = item.operation === '+' ? 'in' : 'out';
-        moneyInBtn.classList.toggle('active', currentType === 'in');
-        moneyOutBtn.classList.toggle('active', currentType === 'out');
-        editIndex = index;
+      function editEntry(index){
+        const item=history[index];
+        document.getElementById('amountInput').value=item.value;
+        document.getElementById('noteInput').value=item.note;
+        document.getElementById('currencySelect').value=item.currency;
+        currentCurrency=item.currency;
+        currentType=item.operation==='+'?'in':'out';
+        moneyInBtn.classList.toggle('active',currentType==='in');
+        moneyOutBtn.classList.toggle('active',currentType==='out');
+        editIndex=index;
       }
 
-      function deleteEntry(index) {
-        const item = history[index];
-        total -= item.operation === '+' ? item.value : -item.value;
-        history.splice(index, 1);
-        document.getElementById('total').innerText = total;
+      function deleteEntry(index){
+        const item=history[index];
+        total -= item.operation==='+'?item.value:-item.value;
+        history.splice(index,1);
+        document.getElementById('total').innerText=total;
         renderHistory();
         saveHistoryToLocal();
+        const type=item.operation==='+'?'In':'Out';
+        const date=new Date(item.timestamp).toLocaleDateString('tr-TR');
+        showAlert(`🗑️ Entry ${item.value}${item.currency} (${type} on ${date}) deleted.`);
       }
 
-      function saveHistoryToLocal() {
-        const data = { total, currentCurrency, history };
-        localStorage.setItem('moneyTrackerData', JSON.stringify(data));
+      function saveHistoryToLocal(){
+        const data={total,currentCurrency,history};
+        localStorage.setItem('moneyTrackerData',JSON.stringify(data));
       }
-      function loadHistoryFromLocal() {
-        const data = localStorage.getItem('moneyTrackerData');
-        if (data) {
-          const parsed = JSON.parse(data);
-          total = parsed.total || 0;
-          currentCurrency = parsed.currentCurrency || '₺';
-          history = parsed.history || [];
-          document.getElementById('total').innerText = total;
-          document.getElementById('currencyDisplay').textContent = currentCurrency;
+      function loadHistoryFromLocal(){
+        const data=localStorage.getItem('moneyTrackerData');
+        if(data){
+          const parsed=JSON.parse(data);
+          total=parsed.total||0;
+          currentCurrency=parsed.currentCurrency||'₺';
+          history=parsed.history||[];
+          document.getElementById('total').innerText=total;
+          document.getElementById('currencyDisplay').textContent=currentCurrency;
           renderHistory();
         }
       }
 
-      function exportExcel() {
-        const worksheetData = history.map(item => {
-          const dateObj = new Date(item.timestamp);
-          return {
-            Date: dateObj.toLocaleDateString('tr-TR'),
-            Time: dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-            Type: item.operation === '+' ? 'In' : 'Out',
-            Amount: item.value + ' ' + item.currency,
-            Note: item.note || ''
-          };
+      function exportExcel(){
+        const worksheetData=history.map(item=>{
+          const dateObj=new Date(item.timestamp);
+          return {Date:dateObj.toLocaleDateString('tr-TR'),Time:dateObj.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),Type:item.operation==='+'?'In':'Out',Amount:item.value+' '+item.currency,Note:item.note||''};
         });
-        const ws = XLSX.utils.json_to_sheet(worksheetData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "History");
-        XLSX.writeFile(wb, "history.xlsx");
-        window.open('history.xlsx', '_blank');
+        const ws=XLSX.utils.json_to_sheet(worksheetData);
+        const wb=XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,ws,"History");
+        XLSX.writeFile(wb,"history.xlsx");
       }
 
-      exportExcelBtn.addEventListener('click', exportExcel);
-      document.getElementById('historySearch').addEventListener('input', renderHistory);
-      document.getElementById('historyDate').addEventListener('change', renderHistory);
-      document.getElementById('historyType').addEventListener('change', renderHistory);
+      document.getElementById('historySearch').addEventListener('input',renderHistory);
+      document.getElementById('historyDate').addEventListener('change',renderHistory);
+      document.getElementById('historyType').addEventListener('change',renderHistory);
+      document.getElementById('exportExcelBtn').addEventListener('click',exportExcel);
 
       loadHistoryFromLocal();
     });
