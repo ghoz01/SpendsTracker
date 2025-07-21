@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Money In-Out Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Nunito', sans-serif; margin: 20px; background: #000; display: flex; gap: 40px; color: #fff; text-shadow: 0 0 2px #fff; }
+    h2,h3,label,span,option,select,button { text-shadow: 0 0 1px #fff; color:#fff; }
+    h2,h3 { color: #fff; font-weight: 400; }
+    .left-panel { flex: 1; }
+    .container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    select,input[type="number"],input[type="text"],input[type="search"],input[type="date"] {
+      padding: 10px; font-size: 18px; border-radius: 4px; border: none;
+      background: #222; color: #fff; font-weight: 400; text-shadow: 0 0 1px #fff;
+      font-family: 'Nunito', sans-serif;
+    }
+    select { width: 120px; }
+    input[type="number"],input[type="text"] { width: 150px; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+    input::placeholder { color: #888; text-shadow: none; }
+    .total { font-weight: 400; font-size: 32px; margin-top: 20px; color: #fff; background: #000;
+      padding: 10px 20px; display: inline-block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); text-shadow: 0 0 1px #fff; }
+    .choice-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    .choice-buttons button { padding: 10px 20px; font-size: 18px; background: #444; color: #fff; border: none; border-radius: 6px; cursor: pointer; opacity: 0.6; text-shadow: 0 0 1px #fff; }
+    .choice-buttons button.active { background: #28a745; opacity: 1; }
+    .choice-buttons button:hover { background: #666; }
+    .history { margin-top: 20px; background: #111; padding: 10px; border-radius: 8px; }
+    .history h3 { font-size: 24px; color: #fff; text-shadow: 0 0 1px #fff; }
+    .history-filters { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .export-btn { padding: 10px 20px; font-size: 16px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-shadow: 0 0 1px #fff; transition: background 0.3s; }
+    .export-btn:hover { background: #555; }
+    .history-headers { display: flex; justify-content: space-between; font-size: 16px; color: #aaa; padding: 4px 8px; border-bottom: 1px solid #333; text-shadow: 0 0 1px #fff; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px; border-bottom: 1px solid #333; color: #ccc; font-weight: 400; text-shadow: 0 0 1px #fff; }
+    .history-item:nth-child(even) { background: #222; }
+    .history-item:hover { background: #333; color: #fff; }
+    .time-date { display: flex; flex-direction: column; line-height: 14px; align-items: flex-start; }
+    .time-date .time { font-size: 12px; font-weight: normal; }
+    .time-date .date { font-size: 10px; color: #aaa; }
+    .amount-glow-in { color: #00ff7f; text-shadow: 0 0 1px #00ff7f, 0 0 2px #00ff7f; }
+    .amount-glow-out { color: #ff4d4d; text-shadow: 0 0 1px #ff4d4d, 0 0 2px #ff4d4d; }
+    .edit-btn, .delete-btn { margin-left: 8px; cursor: pointer; font-size: 18px; background: transparent; border: none; color: #fff; }
+    .edit-btn:hover { color: #0ff; }
+    .delete-btn:hover { color: #f00; }
+    .note-display-wrapper { margin-top: 20px; background: #111; padding: 15px; border-radius: 8px; }
+    .note-display-title { font-size: 22px; font-weight: 600; margin-bottom: 10px; color: #fff; text-shadow: 0 0 1px #fff; }
+    .note-display { font-size: 20px; font-style: italic; background: #222; padding: 15px; border-radius: 8px; color: #fff; font-weight: 500; text-shadow: 0 0 1px #fff; }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <h2>Daily Money In-Out Tracker</h2>
+    <div class="container">
+      <input type="number" id="amountInput" placeholder="Enter amount" />
+      <select id="currencySelect">
+        <option value="₺">₺</option>
+        <option value="$">$</option>
+        <option value="€">€</option>
+      </select>
+      <input type="text" id="noteInput" placeholder="Optional note" />
+    </div>
+    <div class="choice-buttons">
+      <button id="moneyInBtn">Money In</button>
+      <button id="moneyOutBtn">Money Out</button>
+    </div>
+    <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
+    <div class="history">
+      <h3>History</h3>
+      <div class="history-filters">
+        <input type="search" id="historySearch" placeholder="Search time, amount, note, type...">
+        <input type="date" id="historyDate">
+        <select id="historyType">
+          <option value="all">All</option>
+          <option value="in">In</option>
+          <option value="out">Out</option>
+        </select>
+        <button class="export-btn" id="exportExcelBtn">📊 Export Excel</button>
+      </div>
+      <div class="history-headers"><span>Time / Date</span><span>Type</span><span>Amount</span><span>Actions</span></div>
+      <div id="historyList"></div>
+    </div>
+    <div class="note-display-wrapper">
+      <div class="note-display-title" id="noteTitle">Select an entry to view details</div>
+      <div class="note-display" id="noteDisplay">No note selected.</div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let total = 0;
+      let history = [];
+      let currentCurrency = '₺';
+      let currentType = null;
+      let editIndex = null;
 
+      const moneyInBtn = document.getElementById('moneyInBtn');
+      const moneyOutBtn = document.getElementById('moneyOutBtn');
+      const exportExcelBtn = document.getElementById('exportExcelBtn');
+
+      moneyInBtn.addEventListener('click', () => {
+        currentType = 'in';
+        moneyInBtn.classList.add('active');
+        moneyOutBtn.classList.remove('active');
+      });
+      moneyOutBtn.addEventListener('click', () => {
+        currentType = 'out';
+        moneyOutBtn.classList.add('active');
+        moneyInBtn.classList.remove('active');
+      });
+
+      document.getElementById('currencySelect').addEventListener('change', function () {
+        currentCurrency = this.value;
+        document.getElementById('currencyDisplay').textContent = currentCurrency;
+        saveHistoryToLocal();
+      });
+
+      function processOperation(op, value) {
+        if (editIndex !== null && history[editIndex]) {
+          const oldItem = history[editIndex];
+          total -= oldItem.operation === '+' ? oldItem.value : -oldItem.value;
+          oldItem.value = value;
+          oldItem.operation = op;
+          oldItem.currency = currentCurrency;
+          oldItem.note = document.getElementById('noteInput').value.trim();
+          oldItem.timestamp = new Date().toISOString();
+          total += op === '+' ? value : -value;
+          editIndex = null;
+        } else {
+          if (op === '+') total += value; else total -= value;
+          history.push({
+            value,
+            operation: op,
+            timestamp: new Date().toISOString(),
+            note: document.getElementById('noteInput').value.trim(),
+            currency: currentCurrency
+          });
+        }
+        document.getElementById('total').innerText = total;
+        document.getElementById('amountInput').value = '';
+        document.getElementById('noteInput').value = '';
+        renderHistory();
+        saveHistoryToLocal();
+      }
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const val = parseFloat(document.getElementById('amountInput').value);
+          if (!isNaN(val) && currentType) {
+            const op = currentType === 'in' ? '+' : '-';
+            processOperation(op, val);
+          } else {
+            alert('Select Money In or Money Out and enter amount');
+          }
+        }
+      });
+
+      function renderHistory() {
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+        const searchVal = document.getElementById('historySearch').value.toLowerCase();
+        const dateVal = document.getElementById('historyDate').value;
+        const typeVal = document.getElementById('historyType').value;
+        history.forEach((item, idx) => {
+          const dateObj = new Date(item.timestamp);
+          const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const dateStrISO = dateObj.toISOString().split('T')[0];
+          const dateStrReadable = dateObj.toLocaleDateString();
+          const typeStr = item.operation === '+' ? 'in' : 'out';
+          const matchSearch = timeStr.toLowerCase().includes(searchVal) ||
+                              dateStrReadable.toLowerCase().includes(searchVal) ||
+                              (item.note && item.note.toLowerCase().includes(searchVal)) ||
+                              String(item.value).includes(searchVal) ||
+                              typeStr.includes(searchVal);
+          const matchDate = !dateVal || dateVal === dateStrISO;
+          const matchType = (typeVal === 'all') || (typeVal === typeStr);
+          if(matchSearch && matchDate && matchType){
+            const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
+            const displayAmount = `<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+              <span class="time-date">
+                <span class="time">${timeStr}</span>
+                <span class="date">${dateStrReadable}</span>
+              </span>
+              <span>${typeStr === 'in' ? 'In' : 'Out'}</span>
+              <span>${displayAmount}</span>
+              <span>
+                <button class='edit-btn' data-idx='${idx}'>✏️</button>
+                <button class='delete-btn' data-idx='${idx}'>🗑️</button>
+              </span>`;
+            div.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); editEntry(idx); });
+            div.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); deleteEntry(idx); });
+            div.addEventListener('click', () => showNote(idx));
+            list.appendChild(div);
+          }
+        });
+      }
+
+      function showNote(index){
+        const item = history[index];
+        if(!item)return;
+        const dateObj = new Date(item.timestamp);
+        const date = dateObj.toLocaleDateString();
+        const type = item.operation==='+'?'In':'Out';
+        const amount = `${item.value} ${item.currency}`;
+        document.getElementById('noteTitle').textContent = `Details for ${amount} (${type} on ${date})`;
+        document.getElementById('noteDisplay').textContent = item.note || 'No note was added for this entry.';
+      }
+
+      function editEntry(index){
+        const item = history[index];
+        document.getElementById('amountInput').value = item.value;
+        document.getElementById('noteInput').value = item.note;
+        document.getElementById('currencySelect').value = item.currency;
+        currentCurrency = item.currency;
+        currentType = item.operation==='+'?'in':'out';
+        moneyInBtn.classList.toggle('active', currentType==='in');
+        moneyOutBtn.classList.toggle('active', currentType==='out');
+        editIndex = index;
+      }
+
+      function deleteEntry(index){
+        const item = history[index];
+        total -= item.operation==='+'?item.value:-item.value;
+        history.splice(index,1);
+        document.getElementById('total').innerText = total;
+        renderHistory();
+        saveHistoryToLocal();
+      }
+
+      function saveHistoryToLocal(){
+        const data = {total, currentCurrency, history};
+        localStorage.setItem('moneyTrackerData', JSON.stringify(data));
+      }
+      function loadHistoryFromLocal(){
+        const data = localStorage.getItem('moneyTrackerData');
+        if(data){
+          const parsed = JSON.parse(data);
+          total = parsed.total || 0;
+          currentCurrency = parsed.currentCurrency || '₺';
+          history = parsed.history || [];
+          document.getElementById('total').innerText = total;
+          document.getElementById('currencyDisplay').textContent = currentCurrency;
+          renderHistory();
+        }
+      }
+
+      function exportExcel(){
+        const worksheetData = history.map(item=>{
+          const dateObj = new Date(item.timestamp);
+          return {
+            Date: dateObj.toLocaleDateString(),
+            Time: dateObj.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+            Type: item.operation==='+'?'In':'Out',
+            Amount: item.value+' '+item.currency,
+            Note: item.note||''
+          };
+        });
+        const ws = XLSX.utils.json_to_sheet(worksheetData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,ws,"History");
+        XLSX.writeFile(wb,"history.xlsx");
+        window.open('history.xlsx','_blank');
+      }
+
+      exportExcelBtn.addEventListener('click',exportExcel);
+      document.getElementById('historySearch').addEventListener('input',renderHistory);
+      document.getElementById('historyDate').addEventListener('change',renderHistory);
+      document.getElementById('historyType').addEventListener('change',renderHistory);
+
+      loadHistoryFromLocal();
+    });
+  </script>
+</body>
+</html>
