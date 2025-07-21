@@ -31,6 +31,8 @@
     .history-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px; border-bottom: 1px solid #333; color: #ccc; font-weight: 400; text-shadow: 0 0 1px #fff; }
     .history-item:nth-child(even) { background: #222; }
     .history-item:hover { background: #333; color: #fff; }
+    .time-date { display: flex; flex-direction: column; font-size: 12px; line-height: 14px; }
+    .time-date .time { font-size: 14px; font-weight: bold; }
     .amount-glow-in { color: #00ff7f; text-shadow: 0 0 1px #00ff7f, 0 0 2px #00ff7f; }
     .amount-glow-out { color: #ff4d4d; text-shadow: 0 0 1px #ff4d4d, 0 0 2px #ff4d4d; }
     .edit-btn, .delete-btn { margin-left: 8px; cursor: pointer; font-size: 18px; background: transparent; border: none; color: #fff; }
@@ -70,7 +72,7 @@
         </select>
         <button class="export-btn" id="exportExcelBtn">📊 Export Excel</button>
       </div>
-      <div class="history-headers"><span>Time</span><span>Type</span><span>Amount</span><span>Actions</span></div>
+      <div class="history-headers"><span>Time / Date</span><span>Type</span><span>Amount</span><span>Actions</span></div>
       <div id="historyList"></div>
     </div>
     <div class="note-display-wrapper">
@@ -116,23 +118,24 @@
       history.forEach((item, idx) => {
         const dateObj = new Date(item.timestamp);
         const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const dateStr = dateObj.toISOString().slice(0,10);
+        const dateStrISO = dateObj.toISOString().split('T')[0];
+        const dateStrReadable = dateObj.toLocaleDateString();
         const typeStr = item.operation === '+' ? 'in' : 'out';
-        const matchSearch = timeStr.toLowerCase().includes(searchVal) || (item.note && item.note.toLowerCase().includes(searchVal)) || String(item.value).includes(searchVal) || typeStr.includes(searchVal);
-        const matchDate = !dateVal || dateVal === dateStr;
+        const matchSearch = timeStr.toLowerCase().includes(searchVal) || dateStrReadable.toLowerCase().includes(searchVal) || (item.note && item.note.toLowerCase().includes(searchVal)) || String(item.value).includes(searchVal) || typeStr.includes(searchVal);
+        const matchDate = !dateVal || dateVal === dateStrISO;
         const matchType = (typeVal === 'all') || (typeVal === typeStr);
         if(matchSearch && matchDate && matchType){
           const glowClass = item.operation === '+' ? 'amount-glow-in' : 'amount-glow-out';
           const displayAmount = `<span class='${glowClass}'>${item.value} ${item.currency}</span>`;
           const div = document.createElement('div');
           div.className = 'history-item';
-          div.innerHTML = `<span>${timeStr}</span><span>${typeStr === 'in' ? 'In' : 'Out'}</span><span>${displayAmount}</span><span><button class='edit-btn' data-idx='${idx}'>✏️</button><button class='delete-btn' data-idx='${idx}'>🗑️</button></span>`;
+          div.innerHTML = `<span class="time-date"><span class="time">${timeStr}</span><span>${dateStrReadable}</span></span><span>${typeStr === 'in' ? 'In' : 'Out'}</span><span>${displayAmount}</span><span><button class='edit-btn' data-idx='${idx}'>✏️</button><button class='delete-btn' data-idx='${idx}'>🗑️</button></span>`;
+          div.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); editEntry(idx); });
+          div.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); deleteEntry(idx); });
           div.addEventListener('click', () => showNote(idx));
           list.appendChild(div);
         }
       });
-      document.querySelectorAll('.edit-btn').forEach(btn=>{btn.addEventListener('click', e=>{e.stopPropagation();editEntry(e.target.dataset.idx);});});
-      document.querySelectorAll('.delete-btn').forEach(btn=>{btn.addEventListener('click', e=>{e.stopPropagation();deleteEntry(e.target.dataset.idx);});});
     }
 
     function showNote(index){const item=history[index];if(!item)return;const dateObj=new Date(item.timestamp);const date=dateObj.toLocaleDateString();const type=item.operation==='+'?'In':'Out';const amount=`${item.value} ${item.currency}`;document.getElementById('noteTitle').textContent=`Details for ${amount} (${type} on ${date})`;document.getElementById('noteDisplay').textContent=item.note||'No note was added for this entry.';}
