@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Daily Money In-Out Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 body { font-family: 'Nunito', sans-serif; margin: 20px; background: #000; display: flex; gap: 40px; color: #fff; text-shadow: 0 0 2px #fff; }
 h2,h3,label,span,option,select,button { text-shadow: 0 0 1px #fff; color:#fff; }
@@ -63,7 +62,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
       <input type="search" id="historySearch" placeholder="Search time, amount, note, type...">
       <input type="date" id="historyDate">
       <select id="historyType"><option value="all">All</option><option value="in">In</option><option value="out">Out</option></select>
-      <button class="export-btn" id="exportExcelBtn">📊 Export Excel</button>
+      <button class="export-btn" id="exportExcelBtn">📊 Export to Google Sheets</button>
     </div>
     <div class="history-headers"><span>Time / Date</span><span>Type</span><span>Amount</span><span>Actions</span></div>
     <div id="historyList"></div>
@@ -200,34 +199,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function exportExcel(){
-https://script.google.com/macros/s/AKfycbwFNUYHglkm5reoABnjstuyK-eCsDBa7pBgPlPoqicxz74JI-7ZbOV29gj6SQuu0Gy9ag/exec
-  const webAppUrl = 'BURAYA_WEBAPP_URLİNİ_YAPIŞTIR';
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycbwFNUYHglkm5reoABnjstuyK-eCsDBa7pBgPlPoqicxz74JI-7ZbOV29gj6SQuu0Gy9ag/exec';
 
-  const data = history.map(it=>{
-    const d = new Date(it.timestamp);
-    return {
-      Date:d.toLocaleDateString('tr-TR'),
-      Time:d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
-      Type:it.operation==='+'?'In':'Out',
-      Amount:it.value+' '+it.currency,
-      Note:it.note||''
-    };
-  });
-
-  try {
-    await fetch(webAppUrl,{
-      method:'POST',
-      mode:'no-cors', // yanıt okunmasa da yazmaya devam eder
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data)
+    const data = history.map(it=>{
+      const d = new Date(it.timestamp);
+      return {
+        Date:d.toLocaleDateString('tr-TR'),
+        Time:d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
+        Type:it.operation==='+'?'In':'Out',
+        Amount:it.value+' '+it.currency,
+        Note:it.note||''
+      };
     });
-   https://docs.google.com/spreadsheets/d/1TnXPF-A8gcWiIu2Nod_tG4WlFsDzCzYeG7pokOMdVKo/edit?usp=sharing
-    window.open('SHEET_LINKİNİ_BURAYA_YAPIŞTIR','_blank');
-    showAlert('✅ Veriler Google Sheet\'e gönderildi.');
-  } catch(e){
-    showAlert('❌ Google Sheet aktarımında hata: '+e.message);
+
+    try {
+      await fetch(webAppUrl,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      window.open('https://docs.google.com/spreadsheets/d/1TnXPF-A8gcWiIu2Nod_tG4WlFsDzCzYeG7pokOMdVKo/edit?usp=sharing','_blank');
+      showAlert('✅ Veriler Google Sheet\'e gönderildi.');
+    } catch(e){
+      showAlert('❌ Google Sheet aktarımında hata: '+e.message);
+    }
   }
-}
+
   document.getElementById('historySearch').oninput=renderHistory;
   document.getElementById('historyDate').onchange=renderHistory;
   document.getElementById('historyType').onchange=renderHistory;
