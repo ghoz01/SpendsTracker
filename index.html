@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Gold Vault - Professional Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+    <title>Gold Vault - Lemon Milk Edition</title>
+    <link href="https://fonts.cdnfonts.com/css/lemon-milk" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg-obsidian: #080808;
@@ -14,51 +16,126 @@
             --text-silver: #E0E0E0;
             --danger: #FF4B2B;
             --success: #00C851;
+            --font-luxury: 'LEMON MILK', sans-serif;
+            --font-main: 'Nunito', sans-serif;
         }
 
-        body { font-family: 'Nunito', sans-serif; margin: 0; background: var(--bg-obsidian); color: var(--text-silver); display: flex; justify-content: center; padding: 20px; }
+        body { 
+            font-family: var(--font-main); 
+            margin: 0; 
+            background: var(--bg-obsidian); 
+            color: var(--text-silver); 
+            display: flex; 
+            justify-content: center; 
+            padding: 20px; 
+        }
+
         .dashboard { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
         @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
 
-        .card { background: var(--panel-charcoal); padding: 30px; border-radius: 2px; border-top: 3px solid var(--gold-leaf); box-shadow: 0 15px 35px rgba(0,0,0,0.7); position: relative; transition: all 0.3s ease; }
-        .card.edit-mode { border-top: 3px solid var(--gold-bright); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); background: #1a1a10; }
+        /* Titles using Lemon Milk */
+        h2, h3, .label, .main-save-btn, .type-btn, th { 
+            font-family: var(--font-luxury); 
+            font-weight: 400; /* Lemon Milk is naturally bold */
+            letter-spacing: 1px;
+        }
+
+        .card { 
+            background: var(--panel-charcoal); 
+            padding: 30px; 
+            border-radius: 2px; 
+            border-top: 3px solid var(--gold-leaf); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7); 
+            position: relative; 
+            transition: all 0.3s ease; 
+        }
         
-        h2, h3 { font-family: 'Playfair Display', serif; color: var(--gold-leaf); margin-top: 0; }
+        .card.edit-mode { 
+            border-top: 3px solid var(--gold-bright); 
+            background: #1a1a10; 
+        }
 
-        .rates-ticker { font-size: 11px; color: var(--gold-leaf); margin-bottom: 10px; display: flex; gap: 15px; background: #000; padding: 5px 10px; border-radius: 4px; border: 1px solid #222; }
+        .rates-ticker { 
+            font-size: 11px; 
+            color: var(--gold-leaf); 
+            margin-bottom: 15px; 
+            display: flex; 
+            gap: 15px; 
+            background: #000; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            border: 1px solid #222; 
+        }
 
+        /* Form Controls */
         .entry-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; font-size: 15px; outline: none; border-radius: 4px; }
+        input, select { 
+            background: #000; 
+            border: 1px solid #222; 
+            color: #fff; 
+            padding: 12px; 
+            font-size: 15px; 
+            outline: none; 
+            border-radius: 4px;
+            font-family: var(--font-main);
+        }
         input:focus { border-color: var(--gold-leaf); }
         .full-width { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
 
-        /* Filter Specific Styles */
-        .filter-label { font-size: 11px; color: var(--gold-leaf); text-transform: uppercase; display: block; margin-bottom: 5px; margin-top: 10px; }
-        .filter-group { display: flex; gap: 5px; margin-bottom: 15px; }
-
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .type-btn { flex: 1; padding: 12px; cursor: pointer; border: 1px solid #444; background: transparent; color: var(--gold-leaf); font-weight: bold; }
+        .type-btn { 
+            flex: 1; 
+            padding: 12px; 
+            cursor: pointer; 
+            border: 1px solid #444; 
+            background: transparent; 
+            color: var(--gold-leaf); 
+            font-size: 12px;
+        }
         .type-btn.active.in { background: var(--success); color: #fff; border-color: var(--success); }
         .type-btn.active.out { background: var(--danger); color: #fff; border-color: var(--danger); }
         
-        .main-save-btn { width: 100%; padding: 15px; background: var(--gold-leaf); color: #000; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .main-save-btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: var(--gold-leaf); 
+            color: #000; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
 
+        /* Balance Hero using Lemon Milk */
         .balance-hero { background: #000; padding: 40px 20px; text-align: center; border: 1px solid #1a1a1a; margin-bottom: 20px; }
-        .balance-hero .val { font-size: 44px; font-family: 'Playfair Display', serif; display: block; margin: 10px 0; color: #fff; }
-        .balance-hero .label { color: var(--gold-leaf); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+        .balance-hero .val { 
+            font-family: var(--font-luxury);
+            font-size: 38px; 
+            display: block; 
+            margin: 10px 0; 
+            color: #fff; 
+        }
+        .balance-hero .label { font-size: 10px; color: var(--gold-leaf); }
 
+        /* Journal Table */
         .history-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .history-table th { text-align: left; color: var(--gold-leaf); font-size: 11px; padding: 10px; border-bottom: 1px solid #333; }
+        .history-table th { text-align: left; color: var(--gold-leaf); font-size: 10px; padding: 10px; border-bottom: 1px solid #333; }
         .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; cursor: pointer; }
         .history-table tr:hover { background: #1a1a1a; }
         
-        .amt-in { color: var(--success); } .amt-out { color: var(--danger); }
+        .amt-in { color: var(--success); font-weight: 600; } 
+        .amt-out { color: var(--danger); font-weight: 600; }
         .delete-btn { color: #444; background: none; border: none; cursor: pointer; font-size: 16px; }
-        .delete-btn:hover { color: var(--danger); }
-        
-        .loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 12px; color: var(--gold-leaf); }
-        
-        #cancelEdit { display: none; background: #333; color: #eee; margin-top: 10px; }
+
+        .filter-label { 
+            font-family: var(--font-luxury);
+            font-size: 10px; 
+            color: var(--gold-leaf); 
+            display: block; 
+            margin-bottom: 8px; 
+            margin-top: 15px; 
+        }
+
+        .loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 12px; color: var(--gold-leaf); font-family: var(--font-luxury); }
     </style>
 </head>
 <body>
@@ -66,13 +143,13 @@
 <div class="dashboard">
     <div class="left">
         <div class="card" id="inputCard">
-            <div id="loader" class="loading-overlay">Syncing Market Rates...</div>
+            <div id="loader" class="loading-overlay">SYNCING MARKET DATA...</div>
             <div class="rates-ticker">
-                <span>LIVE RATES:</span>
+                <span style="font-family: var(--font-luxury);">RATES:</span>
                 <span id="usdRate">USD: --</span>
                 <span id="eurRate">EUR: --</span>
             </div>
-            <h2 id="formTitle">New Entry</h2>
+            <h2 id="formTitle">NEW ENTRY</h2>
             <div class="entry-grid">
                 <input type="date" id="dateInput">
                 <input type="number" id="amtInput" placeholder="0.00" step="0.01">
@@ -82,22 +159,21 @@
                     <option value="€">€ EUR</option>
                 </select>
             </div>
-            <input type="text" id="noteInput" class="full-width" placeholder="Description...">
+            <input type="text" id="noteInput" class="full-width" placeholder="DESCRIPTION...">
             
             <div class="btn-group">
-                <button id="inBtn" class="type-btn active in" onclick="setType('in')">Income</button>
-                <button id="outBtn" class="type-btn out" onclick="setType('out')">Expense</button>
+                <button id="inBtn" class="type-btn active in" onclick="setType('in')">INCOME</button>
+                <button id="outBtn" class="type-btn out" onclick="setType('out')">EXPENSE</button>
             </div>
             
-            <button class="main-save-btn" id="saveBtn" onclick="processRecord()">Vault Entry</button>
-            <button class="main-save-btn" id="cancelEdit" onclick="cancelEdit()">Cancel Edit</button>
+            <button class="main-save-btn" id="saveBtn" onclick="processRecord()">VAULT ENTRY</button>
+            <button class="main-save-btn" id="cancelEdit" style="display:none; background:#333; color:#fff; margin-top:10px;" onclick="cancelEdit()">CANCEL EDIT</button>
         </div>
 
         <div class="card" style="margin-top: 20px;">
-            <h3>Transaction Journal</h3>
-            <p style="font-size: 10px; color: #666; margin-bottom: 10px;">Showing records based on filters.</p>
+            <h3>TRANSACTION JOURNAL</h3>
             <table class="history-table">
-                <thead><tr><th>Date</th><th>Note</th><th>Original</th><th>In TRY</th><th></th></tr></thead>
+                <thead><tr><th>DATE</th><th>NOTE</th><th>ORIGINAL</th><th>IN TRY</th><th></th></tr></thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
@@ -105,25 +181,24 @@
 
     <div class="right">
         <div class="balance-hero">
-            <span class="label">Filtered Total Assets</span>
+            <span class="label">FILTERED ASSETS</span>
             <span class="val" id="totalValue">0.00</span>
-            <span class="label">Turkish Lira (₺)</span>
+            <span class="label">TURKISH LIRA (₺)</span>
         </div>
         
         <div class="card">
-            <h3>Filters & Export</h3>
+            <h3>FILTERS & EXPORT</h3>
             
-            <span class="filter-label">Search notes, currency or amount</span>
-            <input type="search" id="search" class="full-width" placeholder="e.g. Rent, USD, 500" oninput="render()">
+            <span class="filter-label">SEARCH</span>
+            <input type="search" id="search" class="full-width" placeholder="KEYWORD..." oninput="render()">
             
-            <span class="filter-label">Date Range (From - To)</span>
-            <div class="filter-group">
-                <input type="date" id="dateFrom" onchange="render()">
-                <input type="date" id="dateTo" onchange="render()">
+            <span class="filter-label">DATE RANGE</span>
+            <div style="display:flex; gap:5px; margin-bottom:15px;">
+                <input type="date" id="dateFrom" onchange="render()" style="flex:1; font-size:12px;">
+                <input type="date" id="dateTo" onchange="render()" style="flex:1; font-size:12px;">
             </div>
 
-            <button class="main-save-btn" style="background:#1a1a1a; color:var(--gold-leaf); border: 1px solid var(--gold-leaf);" onclick="exportCSV()">Download Filtered CSV</button>
-            <button onclick="clearFilters()" style="background:transparent; border:none; color:#666; cursor:pointer; font-size:11px; margin-top:10px; width:100%;">Clear All Filters</button>
+            <button class="main-save-btn" style="background:#1a1a1a; color:var(--gold-leaf); border: 1px solid var(--gold-leaf);" onclick="exportCSV()">DOWNLOAD CSV</button>
         </div>
     </div>
 </div>
@@ -133,7 +208,7 @@
     let currentType = 'in';
     let editModeId = null;
     let rates = { usd: 43.47, eur: 51.26 };
-    let filteredRecords = []; // Store current filtered state for export
+    let filteredRecords = [];
 
     async function fetchRates() {
         try {
@@ -146,7 +221,7 @@
             document.getElementById('loader').style.display = 'none';
             render();
         } catch (e) {
-            document.getElementById('loader').textContent = "Offline Mode - Using Cache";
+            document.getElementById('loader').textContent = "OFFLINE MODE";
             setTimeout(() => document.getElementById('loader').style.display = 'none', 2000);
         }
     }
@@ -161,11 +236,11 @@
 
     function processRecord() {
         const amt = parseFloat(document.getElementById('amtInput').value);
-        const note = document.getElementById('noteInput').value || "General";
+        const note = document.getElementById('noteInput').value || "GENERAL";
         const date = document.getElementById('dateInput').value;
         const cur = document.getElementById('curInput').value;
 
-        if (!amt || !date) return alert("Enter amount and date.");
+        if (!amt || !date) return alert("MISSING DATA");
 
         const rateToUse = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
 
@@ -174,8 +249,7 @@
             records[index] = { ...records[index], amt, note, date, cur, type: currentType, rateAtTime: rateToUse };
             editModeId = null;
         } else {
-            const entry = { id: Date.now(), date, note, amt, cur, type: currentType, rateAtTime: rateToUse };
-            records.unshift(entry);
+            records.unshift({ id: Date.now(), date, note, amt, cur, type: currentType, rateAtTime: rateToUse });
         }
 
         saveAndRefresh();
@@ -191,8 +265,8 @@
         document.getElementById('dateInput').value = r.date;
         document.getElementById('curInput').value = r.cur;
         setType(r.type);
-        document.getElementById('formTitle').textContent = "Edit Transaction";
-        document.getElementById('saveBtn').textContent = "Update Entry";
+        document.getElementById('formTitle').textContent = "EDIT ENTRY";
+        document.getElementById('saveBtn').textContent = "UPDATE VAULT";
         document.getElementById('cancelEdit').style.display = "block";
         document.getElementById('inputCard').classList.add('edit-mode');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -203,8 +277,8 @@
         document.getElementById('amtInput').value = '';
         document.getElementById('noteInput').value = '';
         document.getElementById('dateInput').valueAsDate = new Date();
-        document.getElementById('formTitle').textContent = "New Entry";
-        document.getElementById('saveBtn').textContent = "Vault Entry";
+        document.getElementById('formTitle').textContent = "NEW ENTRY";
+        document.getElementById('saveBtn').textContent = "VAULT ENTRY";
         document.getElementById('cancelEdit').style.display = "none";
         document.getElementById('inputCard').classList.remove('edit-mode');
         setType('in');
@@ -212,17 +286,10 @@
 
     function deleteRecord(id, event) {
         event.stopPropagation();
-        if (confirm("Delete this transaction?")) {
+        if (confirm("DELETE TRANSACTION?")) {
             records = records.filter(r => r.id !== id);
             saveAndRefresh();
         }
-    }
-
-    function clearFilters() {
-        document.getElementById('search').value = '';
-        document.getElementById('dateFrom').value = '';
-        document.getElementById('dateTo').value = '';
-        render();
     }
 
     function saveAndRefresh() {
@@ -235,20 +302,13 @@
         const query = document.getElementById('search').value.toLowerCase();
         const fromDate = document.getElementById('dateFrom').value;
         const toDate = document.getElementById('dateTo').value;
-        
         let grandTotalTRY = 0;
         body.innerHTML = '';
         
-        // Filter logic
         filteredRecords = records.filter(r => {
-            const matchesSearch = r.note.toLowerCase().includes(query) || 
-                                  r.cur.toLowerCase().includes(query) || 
-                                  String(r.amt).includes(query);
-            
-            const dateVal = r.date; 
-            const matchesFrom = !fromDate || dateVal >= fromDate;
-            const matchesTo = !toDate || dateVal <= toDate;
-
+            const matchesSearch = r.note.toLowerCase().includes(query) || r.cur.toLowerCase().includes(query);
+            const matchesFrom = !fromDate || r.date >= fromDate;
+            const matchesTo = !toDate || r.date <= toDate;
             return matchesSearch && matchesFrom && matchesTo;
         });
 
@@ -271,25 +331,20 @@
                 </tr>
             `;
         });
-
         document.getElementById('totalValue').textContent = grandTotalTRY.toLocaleString('tr-TR', {minimumFractionDigits:2});
     }
 
     function exportCSV() {
-        if (filteredRecords.length === 0) return alert("No records found in current view to export.");
-        
-        let csv = "Date,Note,Currency,Original Amount,TRY Value,Type\n";
+        if (filteredRecords.length === 0) return alert("NO DATA");
+        let csv = "Date,Note,Currency,Original_Amount,TRY_Value,Type\n";
         filteredRecords.forEach(r => {
             csv += `${r.date},${r.note},${r.cur},${r.amt},${(r.amt * r.rateAtTime).toFixed(2)},${r.type}\n`;
         });
-        
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const fromSuffix = document.getElementById('dateFrom').value || 'Start';
-        const toSuffix = document.getElementById('dateTo').value || 'End';
-        a.download = `Gold_Vault_Filtered_${fromSuffix}_to_${toSuffix}.csv`;
+        a.download = `Gold_Vault_Export.csv`;
         a.click();
     }
 
