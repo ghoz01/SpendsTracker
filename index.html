@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>GOLD VAULT CLOUD</title>
+    <link href="https://fonts.cdnfonts.com/css/lemon-milk" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #080808; --panel: #121212; --gold: #D4AF37; --text: #E0E0E0; --font-l: 'LEMON MILK', sans-serif; }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .dashboard { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--panel); padding: 20px; border-top: 3px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 8px; }
+        h2, .label, .btn { font-family: var(--font-l); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-hero { background: #000; padding: 30px; text-align: center; border: 1px solid var(--gold); border-radius: 8px; }
+        .balance-hero .val { font-family: var(--font-l); font-size: 32px; color: #fff; margin: 10px 0; }
+        input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; background: var(--gold); border: none; cursor: pointer; font-weight: bold; transition: 0.3s; border-radius: 6px; margin-top: 5px; }
+        .btn:hover { box-shadow: 0 0 15px var(--gold); }
+        .sync-status { font-size: 10px; color: var(--gold); text-align: center; margin-bottom: 5px; font-family: var(--font-l); }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .history-table th { color: var(--gold); font-size: 10px; text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+        .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+    </style>
+</head>
+<body>
 
+<div class="dashboard">
+    <div id="syncStatus" class="sync-status">VAULT READY</div>
+    <div class="balance-hero">
+        <span class="label">NET ASSETS</span>
+        <div class="val" id="totalValue">0.00</div>
+        <button class="btn" style="padding: 8px; font-size: 10px; background: #222; color: #aaa;" onclick="syncFromCloud()">☁️ REFRESH FROM CLOUD</button>
+    </div>
+
+    <div class="card">
+        <h2>NEW ENTRY</h2>
+        <input type="date" id="dateInput">
+        <input type="number" id="amtInput" placeholder="0.00" step="0.01">
+        <select id="curInput">
+            <option value="₺">₺ TRY</option>
+            <option value="$">$ USD</option>
+            <option value="€">€ EUR</option>
+        </select>
+        <input type="text" id="noteInput" placeholder="DESCRIPTION...">
+        <button class="btn" onclick="addAndSync()">LOG & SYNC</button>
+    </div>
+
+    <div class="card">
+        <h3>HISTORY</h3>
+        <table class="history-table">
+            <thead><tr><th>DATE</th><th>NOTE</th><th>AMT</th><th>₺ TOTAL</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. YOUR APPS SCRIPT URL HERE
+    const CLOUD_URL = "YOUR_APPS_SCRIPT_URL_HERE";
+
+    let records = JSON.parse(localStorage.getItem('gold_vault_cloud')) || [];
+    let rates = { usd: 43.47, eur: 51.26 };
+
+    function updateStatus(msg) { 
+        document.getElementById('syncStatus').textContent = msg;
+    }
+
+    // PUSH data to Cloud
+    async function syncToCloud() {
+        if (!CLOUD_URL || CLOUD_URL.includes("YOUR_APPS")) return;
+        updateStatus("SYNCING TO CLOUD...");
+        try {
+            // Using text/plain to avoid CORS preflight issues with Google Apps Script
+            await fetch(CLOUD_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(records)
+            });
+            updateStatus("CLOUD SYNCED ✅");
+        } catch (e) {
+            updateStatus("SYNC ERROR ⚠️");
+            console.error(e);
+        }
+    }
+
+    // PULL data from Cloud
+    async function syncFromCloud() {
+        if (!CLOUD_URL || CLOUD_URL.includes("YOUR_APPS")) return;
+        updateStatus("FETCHING FROM CLOUD...");
+        try {
+            const resp = await fetch(CLOUD_URL);
+            const data = await resp.json();
+            if (data && Array.isArray(data)) {
+                records = data;
+                localStorage.setItem('gold_vault_cloud', JSON.stringify(records));
+                render();
+                updateStatus("VAULT UPDATED ✅");
+            }
+        } catch (e) {
+            updateStatus("FETCH FAILED ⚠️");
+            console.error(e);
+        }
+    }
+
+    function addAndSync() {
+        const amt = parseFloat(document.getElementById('amtInput').value);
+        if (!amt) return;
+        const cur = document.getElementById('curInput').value;
+        const date = document.getElementById('dateInput').value;
+        const note = document.getElementById('noteInput').value || "VAULT";
+        
+        const rate = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
+        
+        records.unshift({
+            id: Date.now(),
+            date: date,
+            note: note,
+            amt: amt,
+            cur: cur,
+            type: 'in',
+            rateAtTime: rate
+        });
+        
+        localStorage.setItem('gold_vault_cloud', JSON.stringify(records));
+        render();
+        syncToCloud();
+        
+        // Clear inputs
+        document.getElementById('amtInput').value = '';
+        document.getElementById('noteInput').value = '';
+    }
+
+    function render() {
+        const body = document.getElementById('historyBody');
+        let total = 0; 
+        body.innerHTML = '';
+        records.forEach(r => {
+            const val = r.amt * r.rateAtTime;
+            total += val;
+            const displayDate = r.date ? r.date.split('-').reverse().join('/') : '??';
+            body.innerHTML += `<tr><td>${displayDate}</td><td>${r.note}</td><td>${r.amt}${r.cur}</td><td>${val.toFixed(0)}₺</td></tr>`;
+        });
+        document.getElementById('totalValue').textContent = total.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    }
+
+    // INITIALIZE
+    document.getElementById('dateInput').valueAsDate = new Date();
+    render();
+
+    // AUTO-SYNC ON LOAD
+    window.addEventListener('load', () => {
+        setTimeout(syncFromCloud, 500);
+    });
+</script>
+</body>
+</html>
