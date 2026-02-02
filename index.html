@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Gold Vault - Global Edition</title>
+    <title>Gold Vault - Professional Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,72 +20,78 @@
         .dashboard { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
         @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
 
-        .card { background: var(--panel-charcoal); padding: 30px; border-radius: 2px; border-top: 3px solid var(--gold-leaf); box-shadow: 0 15px 35px rgba(0,0,0,0.7); position: relative; }
-        h1, h2, h3 { font-family: 'Playfair Display', serif; color: var(--gold-leaf); margin-top: 0; }
+        .card { background: var(--panel-charcoal); padding: 30px; border-radius: 2px; border-top: 3px solid var(--gold-leaf); box-shadow: 0 15px 35px rgba(0,0,0,0.7); position: relative; transition: all 0.3s ease; }
+        .card.edit-mode { border-top: 3px solid var(--gold-bright); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); background: #1a1a10; }
+        
+        h2, h3 { font-family: 'Playfair Display', serif; color: var(--gold-leaf); margin-top: 0; }
 
-        /* Rates Ticker */
         .rates-ticker { font-size: 11px; color: var(--gold-leaf); margin-bottom: 10px; display: flex; gap: 15px; background: #000; padding: 5px 10px; border-radius: 4px; border: 1px solid #222; }
 
-        /* Input Styles */
         .entry-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; font-size: 15px; outline: none; }
         input:focus { border-color: var(--gold-leaf); }
         .full-width { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
 
-        /* Buttons */
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
         .type-btn { flex: 1; padding: 12px; cursor: pointer; border: 1px solid #444; background: transparent; color: var(--gold-leaf); font-weight: bold; }
-        .type-btn.active { background: var(--gold-leaf); color: #000; border-color: var(--gold-leaf); }
+        .type-btn.active.in { background: var(--success); color: #fff; border-color: var(--success); }
+        .type-btn.active.out { background: var(--danger); color: #fff; border-color: var(--danger); }
+        
         .main-save-btn { width: 100%; padding: 15px; background: var(--gold-leaf); color: #000; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
-        /* Balance Display */
         .balance-hero { background: #000; padding: 40px 20px; text-align: center; border: 1px solid #1a1a1a; margin-bottom: 20px; }
         .balance-hero .val { font-size: 44px; font-family: 'Playfair Display', serif; display: block; margin: 10px 0; color: #fff; }
         .balance-hero .label { color: var(--gold-leaf); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* Table */
         .history-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .history-table th { text-align: left; color: var(--gold-leaf); font-size: 11px; padding: 10px; border-bottom: 1px solid #333; text-transform: uppercase; }
-        .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+        .history-table th { text-align: left; color: var(--gold-leaf); font-size: 11px; padding: 10px; border-bottom: 1px solid #333; }
+        .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; cursor: pointer; }
+        .history-table tr:hover { background: #1a1a1a; }
+        
         .amt-in { color: var(--success); } .amt-out { color: var(--danger); }
-        .delete-icon { color: #444; cursor: pointer; text-align: right; }
+        .delete-btn { color: #444; background: none; border: none; cursor: pointer; font-size: 16px; }
+        .delete-btn:hover { color: var(--danger); }
         
         .loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 12px; color: var(--gold-leaf); }
+        
+        #cancelEdit { display: none; background: #333; color: #eee; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <div class="left">
-        <div class="card">
-            <div id="loader" class="loading-overlay">Syncing with Central Bank...</div>
+        <div class="card" id="inputCard">
+            <div id="loader" class="loading-overlay">Syncing Market Rates...</div>
             <div class="rates-ticker">
                 <span>LIVE RATES:</span>
                 <span id="usdRate">USD: --</span>
                 <span id="eurRate">EUR: --</span>
             </div>
-            <h2>New Entry</h2>
+            <h2 id="formTitle">New Entry</h2>
             <div class="entry-grid">
                 <input type="date" id="dateInput">
-                <input type="number" id="amtInput" placeholder="0.00">
+                <input type="number" id="amtInput" placeholder="0.00" step="0.01">
                 <select id="curInput">
                     <option value="₺">₺ TRY</option>
                     <option value="$">$ USD</option>
                     <option value="€">€ EUR</option>
                 </select>
             </div>
-            <input type="text" id="noteInput" class="full-width" placeholder="Notes (e.g. Monthly Salary)">
+            <input type="text" id="noteInput" class="full-width" placeholder="Description...">
             
             <div class="btn-group">
-                <button id="inBtn" class="type-btn active" onclick="setType('in')">Income</button>
-                <button id="outBtn" class="type-btn" onclick="setType('out')">Expense</button>
+                <button id="inBtn" class="type-btn active in" onclick="setType('in')">Income</button>
+                <button id="outBtn" class="type-btn out" onclick="setType('out')">Expense</button>
             </div>
             
-            <button class="main-save-btn" onclick="addRecord()">Vault Entry</button>
+            <button class="main-save-btn" id="saveBtn" onclick="processRecord()">Vault Entry</button>
+            <button class="main-save-btn" id="cancelEdit" onclick="cancelEdit()">Cancel Edit</button>
         </div>
 
         <div class="card" style="margin-top: 20px;">
             <h3>Transaction Journal</h3>
+            <p style="font-size: 10px; color: #666; margin-bottom: 10px;">TIP: Click a row to edit properties.</p>
             <table class="history-table">
                 <thead><tr><th>Date</th><th>Note</th><th>Original</th><th>In TRY</th><th></th></tr></thead>
                 <tbody id="historyBody"></tbody>
@@ -99,7 +105,6 @@
             <span class="val" id="totalValue">0.00</span>
             <span class="label">Turkish Lira (₺)</span>
         </div>
-
         <div class="card">
             <h3>Filters & Export</h3>
             <input type="search" id="search" class="full-width" placeholder="Search notes..." oninput="render()">
@@ -111,22 +116,20 @@
 <script>
     let records = JSON.parse(localStorage.getItem('gold_vault_v2')) || [];
     let currentType = 'in';
-    let rates = { usd: 43.47, eur: 51.26 }; // Fallback defaults
+    let editModeId = null;
+    let rates = { usd: 43.47, eur: 51.26 };
 
     async function fetchRates() {
         try {
             const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/try.json');
             const data = await response.json();
-            // API returns TRY as base, so we invert it
             rates.usd = (1 / data.try.usd).toFixed(2);
             rates.eur = (1 / data.try.eur).toFixed(2);
-            
             document.getElementById('usdRate').textContent = `USD: ${rates.usd} ₺`;
             document.getElementById('eurRate').textContent = `EUR: ${rates.eur} ₺`;
             document.getElementById('loader').style.display = 'none';
             render();
         } catch (e) {
-            console.error("Rate fetch failed, using defaults", e);
             document.getElementById('loader').textContent = "Offline Mode - Using Cache";
             setTimeout(() => document.getElementById('loader').style.display = 'none', 2000);
         }
@@ -140,7 +143,7 @@
         document.getElementById('outBtn').classList.toggle('active', t === 'out');
     }
 
-    function addRecord() {
+    function processRecord() {
         const amt = parseFloat(document.getElementById('amtInput').value);
         const note = document.getElementById('noteInput').value || "General";
         const date = document.getElementById('dateInput').value;
@@ -148,25 +151,65 @@
 
         if (!amt || !date) return alert("Enter amount and date.");
 
-        const entry = {
-            id: Date.now(),
-            date, note, amt, cur, type: currentType,
-            rateAtTime: cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1)
-        };
+        const rateToUse = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
 
-        records.unshift(entry);
-        localStorage.setItem('gold_vault_v2', JSON.stringify(records));
-        document.getElementById('amtInput').value = '';
-        document.getElementById('noteInput').value = '';
-        render();
+        if (editModeId) {
+            // Update existing
+            const index = records.findIndex(r => r.id === editModeId);
+            records[index] = { ...records[index], amt, note, date, cur, type: currentType, rateAtTime: rateToUse };
+            editModeId = null;
+        } else {
+            // Add new
+            const entry = { id: Date.now(), date, note, amt, cur, type: currentType, rateAtTime: rateToUse };
+            records.unshift(entry);
+        }
+
+        saveAndRefresh();
+        cancelEdit(); // Reset form
     }
 
-    function deleteRecord(id) {
-        if (confirm("Remove entry?")) {
+    function editRecord(id) {
+        const r = records.find(item => item.id === id);
+        if (!r) return;
+
+        editModeId = id;
+        document.getElementById('amtInput').value = r.amt;
+        document.getElementById('noteInput').value = r.note;
+        document.getElementById('dateInput').value = r.date;
+        document.getElementById('curInput').value = r.cur;
+        setType(r.type);
+
+        // UI Changes for Edit Mode
+        document.getElementById('formTitle').textContent = "Edit Transaction";
+        document.getElementById('saveBtn').textContent = "Update Entry";
+        document.getElementById('cancelEdit').style.display = "block";
+        document.getElementById('inputCard').classList.add('edit-mode');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        editModeId = null;
+        document.getElementById('amtInput').value = '';
+        document.getElementById('noteInput').value = '';
+        document.getElementById('dateInput').valueAsDate = new Date();
+        document.getElementById('formTitle').textContent = "New Entry";
+        document.getElementById('saveBtn').textContent = "Vault Entry";
+        document.getElementById('cancelEdit').style.display = "none";
+        document.getElementById('inputCard').classList.remove('edit-mode');
+        setType('in');
+    }
+
+    function deleteRecord(id, event) {
+        event.stopPropagation(); // Prevents triggering the edit mode
+        if (confirm("Delete this transaction?")) {
             records = records.filter(r => r.id !== id);
-            localStorage.setItem('gold_vault_v2', JSON.stringify(records));
-            render();
+            saveAndRefresh();
         }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('gold_vault_v2', JSON.stringify(records));
+        render();
     }
 
     function render() {
@@ -182,14 +225,16 @@
 
             if (r.note.toLowerCase().includes(query)) {
                 body.innerHTML += `
-                    <tr>
+                    <tr onclick="editRecord(${r.id})">
                         <td>${r.date}</td>
                         <td style="color:var(--gold-leaf)">${r.note}</td>
                         <td>${r.amt} ${r.cur}</td>
                         <td class="${r.type === 'in' ? 'amt-in' : 'amt-out'}">
                             ${r.type === 'in' ? '+' : '-'}${valInTRY.toLocaleString('tr-TR', {minimumFractionDigits:2})} ₺
                         </td>
-                        <td class="delete-icon" onclick="deleteRecord(${r.id})">✕</td>
+                        <td style="text-align:right">
+                            <button class="delete-btn" onclick="deleteRecord(${r.id}, event)">✕</button>
+                        </td>
                     </tr>
                 `;
             }
@@ -201,8 +246,7 @@
     function exportCSV() {
         let csv = "Date,Note,Currency,Original Amount,TRY Value,Type\n";
         records.forEach(r => {
-            const tryVal = (r.amt * r.rateAtTime).toFixed(2);
-            csv += `${r.date},${r.note},${r.cur},${r.amt},${tryVal},${r.type}\n`;
+            csv += `${r.date},${r.note},${r.cur},${r.amt},${(r.amt * r.rateAtTime).toFixed(2)},${r.type}\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
