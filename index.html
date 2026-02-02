@@ -28,9 +28,13 @@
         .rates-ticker { font-size: 11px; color: var(--gold-leaf); margin-bottom: 10px; display: flex; gap: 15px; background: #000; padding: 5px 10px; border-radius: 4px; border: 1px solid #222; }
 
         .entry-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; font-size: 15px; outline: none; }
+        input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; font-size: 15px; outline: none; border-radius: 4px; }
         input:focus { border-color: var(--gold-leaf); }
         .full-width { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+
+        /* Filter Specific Styles */
+        .filter-label { font-size: 11px; color: var(--gold-leaf); text-transform: uppercase; display: block; margin-bottom: 5px; margin-top: 10px; }
+        .filter-group { display: flex; gap: 5px; margin-bottom: 15px; }
 
         .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
         .type-btn { flex: 1; padding: 12px; cursor: pointer; border: 1px solid #444; background: transparent; color: var(--gold-leaf); font-weight: bold; }
@@ -91,7 +95,7 @@
 
         <div class="card" style="margin-top: 20px;">
             <h3>Transaction Journal</h3>
-            <p style="font-size: 10px; color: #666; margin-bottom: 10px;">TIP: Click a row to edit properties.</p>
+            <p style="font-size: 10px; color: #666; margin-bottom: 10px;">Showing records based on filters.</p>
             <table class="history-table">
                 <thead><tr><th>Date</th><th>Note</th><th>Original</th><th>In TRY</th><th></th></tr></thead>
                 <tbody id="historyBody"></tbody>
@@ -101,14 +105,25 @@
 
     <div class="right">
         <div class="balance-hero">
-            <span class="label">Net Portfolio Value</span>
+            <span class="label">Filtered Total Assets</span>
             <span class="val" id="totalValue">0.00</span>
             <span class="label">Turkish Lira (₺)</span>
         </div>
+        
         <div class="card">
             <h3>Filters & Export</h3>
-            <input type="search" id="search" class="full-width" placeholder="Search notes..." oninput="render()">
-            <button class="main-save-btn" style="background:#1a1a1a; color:var(--gold-leaf); border: 1px solid var(--gold-leaf);" onclick="exportCSV()">Download CSV</button>
+            
+            <span class="filter-label">Search notes, currency or amount</span>
+            <input type="search" id="search" class="full-width" placeholder="e.g. Rent, USD, 500" oninput="render()">
+            
+            <span class="filter-label">Date Range (From - To)</span>
+            <div class="filter-group">
+                <input type="date" id="dateFrom" onchange="render()">
+                <input type="date" id="dateTo" onchange="render()">
+            </div>
+
+            <button class="main-save-btn" style="background:#1a1a1a; color:var(--gold-leaf); border: 1px solid var(--gold-leaf);" onclick="exportCSV()">Download Filtered CSV</button>
+            <button onclick="clearFilters()" style="background:transparent; border:none; color:#666; cursor:pointer; font-size:11px; margin-top:10px; width:100%;">Clear All Filters</button>
         </div>
     </div>
 </div>
@@ -118,6 +133,7 @@
     let currentType = 'in';
     let editModeId = null;
     let rates = { usd: 43.47, eur: 51.26 };
+    let filteredRecords = []; // Store current filtered state for export
 
     async function fetchRates() {
         try {
@@ -154,32 +170,27 @@
         const rateToUse = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
 
         if (editModeId) {
-            // Update existing
             const index = records.findIndex(r => r.id === editModeId);
             records[index] = { ...records[index], amt, note, date, cur, type: currentType, rateAtTime: rateToUse };
             editModeId = null;
         } else {
-            // Add new
             const entry = { id: Date.now(), date, note, amt, cur, type: currentType, rateAtTime: rateToUse };
             records.unshift(entry);
         }
 
         saveAndRefresh();
-        cancelEdit(); // Reset form
+        cancelEdit();
     }
 
     function editRecord(id) {
         const r = records.find(item => item.id === id);
         if (!r) return;
-
         editModeId = id;
         document.getElementById('amtInput').value = r.amt;
         document.getElementById('noteInput').value = r.note;
         document.getElementById('dateInput').value = r.date;
         document.getElementById('curInput').value = r.cur;
         setType(r.type);
-
-        // UI Changes for Edit Mode
         document.getElementById('formTitle').textContent = "Edit Transaction";
         document.getElementById('saveBtn').textContent = "Update Entry";
         document.getElementById('cancelEdit').style.display = "block";
@@ -200,11 +211,18 @@
     }
 
     function deleteRecord(id, event) {
-        event.stopPropagation(); // Prevents triggering the edit mode
+        event.stopPropagation();
         if (confirm("Delete this transaction?")) {
             records = records.filter(r => r.id !== id);
             saveAndRefresh();
         }
+    }
+
+    function clearFilters() {
+        document.getElementById('search').value = '';
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        render();
     }
 
     function saveAndRefresh() {
@@ -215,44 +233,63 @@
     function render() {
         const body = document.getElementById('historyBody');
         const query = document.getElementById('search').value.toLowerCase();
+        const fromDate = document.getElementById('dateFrom').value;
+        const toDate = document.getElementById('dateTo').value;
+        
         let grandTotalTRY = 0;
         body.innerHTML = '';
+        
+        // Filter logic
+        filteredRecords = records.filter(r => {
+            const matchesSearch = r.note.toLowerCase().includes(query) || 
+                                  r.cur.toLowerCase().includes(query) || 
+                                  String(r.amt).includes(query);
+            
+            const dateVal = r.date; 
+            const matchesFrom = !fromDate || dateVal >= fromDate;
+            const matchesTo = !toDate || dateVal <= toDate;
 
-        records.forEach(r => {
+            return matchesSearch && matchesFrom && matchesTo;
+        });
+
+        filteredRecords.forEach(r => {
             const valInTRY = r.amt * r.rateAtTime;
             if (r.type === 'in') grandTotalTRY += valInTRY;
             else grandTotalTRY -= valInTRY;
 
-            if (r.note.toLowerCase().includes(query)) {
-                body.innerHTML += `
-                    <tr onclick="editRecord(${r.id})">
-                        <td>${r.date}</td>
-                        <td style="color:var(--gold-leaf)">${r.note}</td>
-                        <td>${r.amt} ${r.cur}</td>
-                        <td class="${r.type === 'in' ? 'amt-in' : 'amt-out'}">
-                            ${r.type === 'in' ? '+' : '-'}${valInTRY.toLocaleString('tr-TR', {minimumFractionDigits:2})} ₺
-                        </td>
-                        <td style="text-align:right">
-                            <button class="delete-btn" onclick="deleteRecord(${r.id}, event)">✕</button>
-                        </td>
-                    </tr>
-                `;
-            }
+            body.innerHTML += `
+                <tr onclick="editRecord(${r.id})">
+                    <td>${r.date}</td>
+                    <td style="color:var(--gold-leaf)">${r.note}</td>
+                    <td>${r.amt} ${r.cur}</td>
+                    <td class="${r.type === 'in' ? 'amt-in' : 'amt-out'}">
+                        ${r.type === 'in' ? '+' : '-'}${valInTRY.toLocaleString('tr-TR', {minimumFractionDigits:2})} ₺
+                    </td>
+                    <td style="text-align:right">
+                        <button class="delete-btn" onclick="deleteRecord(${r.id}, event)">✕</button>
+                    </td>
+                </tr>
+            `;
         });
 
         document.getElementById('totalValue').textContent = grandTotalTRY.toLocaleString('tr-TR', {minimumFractionDigits:2});
     }
 
     function exportCSV() {
+        if (filteredRecords.length === 0) return alert("No records found in current view to export.");
+        
         let csv = "Date,Note,Currency,Original Amount,TRY Value,Type\n";
-        records.forEach(r => {
+        filteredRecords.forEach(r => {
             csv += `${r.date},${r.note},${r.cur},${r.amt},${(r.amt * r.rateAtTime).toFixed(2)},${r.type}\n`;
         });
+        
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Gold_Export_${new Date().toISOString().split('T')[0]}.csv`;
+        const fromSuffix = document.getElementById('dateFrom').value || 'Start';
+        const toSuffix = document.getElementById('dateTo').value || 'End';
+        a.download = `Gold_Vault_Filtered_${fromSuffix}_to_${toSuffix}.csv`;
         a.click();
     }
 
