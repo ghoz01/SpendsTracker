@@ -1,238 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Daily Money In-Out Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
-<style>
-body { font-family: 'Nunito', sans-serif; margin: 20px; background: #000; display: flex; gap: 40px; color: #fff; text-shadow: 0 0 2px #fff; }
-h2,h3,label,span,option,select,button { text-shadow: 0 0 1px #fff; color:#fff; }
-h2,h3 { color: #fff; font-weight: 400; }
-.left-panel { flex: 1; }
-.container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-select,input[type="number"],input[type="text"],input[type="search"],input[type="date"] {
-  padding: 10px; font-size: 18px; border-radius: 4px; border: none;
-  background: #222; color: #fff; font-family: 'Nunito', sans-serif;
-}
-select { width: 120px; }
-input[type="number"],input[type="text"] { width: 150px; }
-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-.total { font-size: 32px; margin-top: 20px; background:#000; padding:10px 20px; display:inline-block; border-radius:8px; }
-.choice-buttons { display: flex; gap: 10px; margin-top: 10px; }
-.choice-buttons button { padding: 10px 20px; font-size: 18px; background: #444; border: none; border-radius: 6px; cursor: pointer; opacity: 0.6; }
-.choice-buttons button.active { background: #28a745; opacity: 1; }
-.history { margin-top: 20px; background: #111; padding: 10px; border-radius: 8px; }
-.history-filters { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.export-btn { padding: 10px 20px; font-size: 16px; background: #333; border: none; border-radius: 6px; cursor: pointer; }
-.history-headers { display: flex; justify-content: space-between; font-size: 16px; color: #aaa; padding: 4px 8px; border-bottom: 1px solid #333; }
-.history-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px; border-bottom: 1px solid #333; color: #ccc; }
-.history-item:nth-child(even){background:#222;}
-.history-item:hover { background:#333; color:#fff; }
-.no-results { padding:10px; text-align:center; color:#aaa; font-style:italic; }
-.time-date { display:flex; flex-direction:column; align-items:flex-start; }
-.time-date .time { font-size:12px; }
-.time-date .date { font-size:10px; color:#aaa; }
-.amount-glow-in { color:#00ff7f; text-shadow:0 0 2px #00ff7f; }
-.amount-glow-out { color:#ff4d4d; text-shadow:0 0 2px #ff4d4d; }
-.edit-btn,.delete-btn { margin-left:8px; cursor:pointer; font-size:18px; background:transparent; border:none; color:#fff; }
-.note-display-wrapper { margin-top:20px; background:#111; padding:15px; border-radius:8px; }
-.note-display-title { font-size:22px; margin-bottom:10px; }
-.note-display { font-size:20px; background:#222; padding:15px; border-radius:8px; }
-#alertBox {position:fixed;top:20px;right:20px;background:#222;color:#fff;padding:12px 18px;border-radius:6px;box-shadow:0 0 10px rgba(255,255,255,0.5);display:none;z-index:9999;font-size:16px;}
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pro Money Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #28a745;
+            --danger: #dc3545;
+            --text-main: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --accent: #bb86fc;
+        }
+
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            margin: 0; 
+            background: var(--bg-dark); 
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper { grid-template-columns: 1fr; }
+        }
+
+        h2, h3 { font-weight: 600; margin-bottom: 20px; color: var(--accent); }
+
+        /* Panels */
+        .panel {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .input-group { 
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+            color: #fff;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .full-width { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+
+        /* Operation Buttons */
+        .type-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .type-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            background: #333;
+            color: var(--text-dim);
+            transition: 0.3s;
+        }
+
+        .type-btn.in.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(40, 167, 69, 0.4); }
+        .type-btn.out.active { background: var(--danger); color: white; box-shadow: 0 0 15px rgba(220, 53, 69, 0.4); }
+
+        /* Total Section */
+        .balance-card {
+            text-align: center;
+            background: linear-gradient(145deg, #232323, #1a1a1a);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .balance-card .label { font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-card .amount { font-size: 36px; font-weight: 700; margin: 10px 0; }
+
+        /* History */
+        .history-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .history-list { max-height: 400px; overflow-y: auto; }
+        
+        .item {
+            display: grid;
+            grid-template-columns: 80px 1fr 100px 80px;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            transition: 0.2s;
+        }
+        .item:hover { background: #252525; }
+
+        .item .date-col { font-size: 12px; color: var(--text-dim); }
+        .item .note-col { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item .amt-col { font-weight: 700; text-align: right; }
+        .item .act-col { text-align: right; }
+
+        .in-glow { color: #00ff88; }
+        .out-glow { color: #ff5555; }
+
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; padding: 5px; }
+
+        /* Toast Alert */
+        #toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 15px 25px;
+            background: var(--accent); color: #000; border-radius: 8px;
+            font-weight: bold; transform: translateY(100px); transition: 0.4s; z-index: 1000;
+        }
+        #toast.show { transform: translateY(0); }
+    </style>
 </head>
 <body>
-<div class="left-panel">
-  <h2>Daily Money In-Out Tracker</h2>
-  <div class="container">
-    <input type="number" id="amountInput" placeholder="Enter amount" />
-    <select id="currencySelect"><option value="₺">₺</option><option value="$">$</option><option value="€">€</option></select>
-    <input type="text" id="noteInput" placeholder="Optional note" />
-  </div>
-  <div class="choice-buttons">
-    <button id="moneyInBtn">Money In</button>
-    <button id="moneyOutBtn">Money Out</button>
-  </div>
-  <div class="total">Total: <span id="total">0</span> <span id="currencyDisplay">₺</span></div>
-  <div id="alertBox"></div>
-  <div class="history">
-    <h3>History</h3>
-    <div class="history-filters">
-      <input type="search" id="historySearch" placeholder="Search time, amount, note, type...">
-      <input type="date" id="historyDate">
-      <select id="historyType"><option value="all">All</option><option value="in">In</option><option value="out">Out</option></select>
-      <button class="export-btn" id="exportExcelBtn">📊 Export to Google Sheets</button>
+
+<div class="main-wrapper">
+    <div class="left-col">
+        <div class="panel">
+            <h2>Add Transaction</h2>
+            <div class="input-group">
+                <input type="number" id="amountInput" placeholder="0.00" step="0.01">
+                <select id="currencySelect">
+                    <option value="₺">₺ TRY</option>
+                    <option value="$">$ USD</option>
+                    <option value="€">€ EUR</option>
+                </select>
+            </div>
+            <input type="text" id="noteInput" class="full-width" placeholder="What was this for? (e.g. Groceries)">
+            
+            <div class="type-selector">
+                <button class="type-btn in" id="btnIn">↑ Money In</button>
+                <button class="type-btn out" id="btnOut">↓ Money Out</button>
+            </div>
+            
+            <button id="saveBtn" style="width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                Save Transaction (Enter)
+            </button>
+        </div>
+
+        <div class="panel" style="margin-top: 20px;">
+            <h3>Transaction History</h3>
+            <div class="history-controls">
+                <input type="search" id="search" placeholder="Search notes..." style="flex: 1;">
+                <input type="date" id="filterDate">
+                <button id="exportBtn" style="background: #333; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer;">📊 Export</button>
+            </div>
+            <div class="history-list" id="historyList">
+                </div>
+        </div>
     </div>
-    <div class="history-headers"><span>Time / Date</span><span>Type</span><span>Amount</span><span>Actions</span></div>
-    <div id="historyList"></div>
-  </div>
-  <div class="note-display-wrapper">
-    <div class="note-display-title" id="noteTitle">Select an entry to view details</div>
-    <div class="note-display" id="noteDisplay">No note selected.</div>
-  </div>
+
+    <div class="right-col">
+        <div class="balance-card">
+            <div class="label">Current Balance</div>
+            <div class="amount"><span id="totalDisplay">0</span> <span id="curDisplay">₺</span></div>
+        </div>
+
+        <div class="panel" id="detailsPanel">
+            <h3>Details</h3>
+            <div id="detailContent" style="color: var(--text-dim);">
+                Select a transaction to view full details.
+            </div>
+        </div>
+    </div>
 </div>
 
+<div id="toast">Notification!</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  let total = 0;
-  let history = [];
-  let currentCurrency = '₺';
-  let currentType = null;
-  let editIndex = null;
-  const alertBox = document.getElementById('alertBox');
+    let state = {
+        history: JSON.parse(localStorage.getItem('wallet_data')) || [],
+        currentType: 'in',
+        editId: null
+    };
 
-  function showAlert(msg){
-    alertBox.textContent = msg;
-    alertBox.style.display = 'block';
-    setTimeout(()=>{ alertBox.style.display='none'; },5000);
-  }
+    const elements = {
+        amount: document.getElementById('amountInput'),
+        note: document.getElementById('noteInput'),
+        currency: document.getElementById('currencySelect'),
+        list: document.getElementById('historyList'),
+        total: document.getElementById('totalDisplay'),
+        curLabel: document.getElementById('curDisplay'),
+        btnIn: document.getElementById('btnIn'),
+        btnOut: document.getElementById('btnOut'),
+        toast: document.getElementById('toast')
+    };
 
-  const moneyInBtn=document.getElementById('moneyInBtn');
-  const moneyOutBtn=document.getElementById('moneyOutBtn');
-  moneyInBtn.onclick=()=>{currentType='in';moneyInBtn.classList.add('active');moneyOutBtn.classList.remove('active');};
-  moneyOutBtn.onclick=()=>{currentType='out';moneyOutBtn.classList.add('active');moneyInBtn.classList.remove('active');};
+    // --- Core Logic ---
 
-  document.getElementById('currencySelect').onchange=function(){
-    currentCurrency=this.value;
-    document.getElementById('currencyDisplay').textContent=currentCurrency;
-    saveHistoryToLocal();
-  };
+    function save() {
+        const val = parseFloat(elements.amount.value);
+        if (!val || isNaN(val)) return showToast("Please enter a valid amount");
 
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){
-      const val=parseFloat(document.getElementById('amountInput').value);
-      if(!isNaN(val)&&currentType){
-        processOperation(currentType==='in'?'+':'-',val);
-      }else{
-        alert('Select Money In or Money Out and enter amount');
-      }
+        const entry = {
+            id: state.editId || Date.now(),
+            amount: val,
+            type: state.currentType,
+            currency: elements.currency.value,
+            note: elements.note.value,
+            date: new Date().toISOString()
+        };
+
+        if (state.editId) {
+            const index = state.history.findIndex(i => i.id === state.editId);
+            state.history[index] = entry;
+            state.editId = null;
+        } else {
+            state.history.unshift(entry);
+        }
+
+        updateUI();
+        clearInputs();
+        showToast("Transaction Saved!");
     }
-  });
 
-  function processOperation(op,value){
-    if(editIndex!==null){
-      const old=history[editIndex];
-      total -= old.operation==='+'?old.value:-old.value;
-      old.value=value; old.operation=op; old.currency=currentCurrency; old.note=document.getElementById('noteInput').value.trim(); old.timestamp=new Date().toISOString();
-      total += op==='+'?value:-value;
-      editIndex=null;
-    }else{
-      if(op==='+') total+=value; else total-=value;
-      history.push({value,operation:op,timestamp:new Date().toISOString(),note:document.getElementById('noteInput').value.trim(),currency:currentCurrency});
+    function deleteEntry(id) {
+        if(confirm("Delete this record?")) {
+            state.history = state.history.filter(i => i.id !== id);
+            updateUI();
+            showToast("Record Deleted");
+        }
     }
-    document.getElementById('total').textContent=total;
-    document.getElementById('amountInput').value='';
-    document.getElementById('noteInput').value='';
-    renderHistory();
-    saveHistoryToLocal();
-    showAlert('✅ Record saved successfully.');
-  }
 
-  function renderHistory(){
-    const list=document.getElementById('historyList');list.innerHTML='';
-    const searchVal=document.getElementById('historySearch').value.toLowerCase();
-    const dateVal=document.getElementById('historyDate').value;
-    const typeVal=document.getElementById('historyType').value;
-    let found=false;
-    history.forEach((item,idx)=>{
-      const dateObj=new Date(item.timestamp);
-      const timeStr=dateObj.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-      const dateStrISO=dateObj.toISOString().split('T')[0];
-      const dateStrReadable=dateObj.toLocaleDateString('tr-TR');
-      const typeStr=item.operation==='+'?'in':'out';
-      const matchSearch=timeStr.toLowerCase().includes(searchVal)||dateStrReadable.toLowerCase().includes(searchVal)||(item.note&&item.note.toLowerCase().includes(searchVal))||String(item.value).includes(searchVal)||typeStr.includes(searchVal);
-      const matchDate=!dateVal||dateVal===dateStrISO;
-      const matchType=(typeVal==='all'||typeVal===typeStr);
-      if(matchSearch&&matchDate&&matchType){
-        found=true;
-        const glow=item.operation==='+'?'amount-glow-in':'amount-glow-out';
-        const div=document.createElement('div');
-        div.className='history-item';
-        div.innerHTML=`<span class='time-date'><span class='time'>${timeStr}</span><span class='date'>${dateStrReadable}</span></span><span>${typeStr==='in'?'In':'Out'}</span><span class='${glow}'>${item.value} ${item.currency}</span><span><button class='edit-btn'>✏️</button><button class='delete-btn'>🗑️</button></span>`;
-        div.querySelector('.edit-btn').onclick=(e)=>{e.stopPropagation();editEntry(idx);};
-        div.querySelector('.delete-btn').onclick=(e)=>{e.stopPropagation();deleteEntry(idx);};
-        div.onclick=()=>showNote(idx);
-        list.appendChild(div);
-      }
+    function editEntry(id) {
+        const entry = state.history.find(i => i.id === id);
+        elements.amount.value = entry.amount;
+        elements.note.value = entry.note;
+        elements.currency.value = entry.currency;
+        setType(entry.type);
+        state.editId = id;
+        elements.amount.focus();
+    }
+
+    function updateUI() {
+        localStorage.setItem('wallet_data', JSON.stringify(state.history));
+        
+        // Calculate Total
+        const total = state.history.reduce((acc, curr) => {
+            return curr.type === 'in' ? acc + curr.amount : acc - curr.amount;
+        }, 0);
+        
+        elements.total.textContent = total.toLocaleString();
+        elements.curLabel.textContent = elements.currency.value;
+
+        // Render List
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        const dateFilter = document.getElementById('filterDate').value;
+
+        const filtered = state.history.filter(i => {
+            const matchesSearch = i.note.toLowerCase().includes(searchTerm);
+            const matchesDate = !dateFilter || i.date.startsWith(dateFilter);
+            return matchesSearch && matchesDate;
+        });
+
+        elements.list.innerHTML = filtered.map(i => `
+            <div class="item" onclick="showDetails(${i.id})">
+                <div class="date-col">${new Date(i.date).toLocaleDateString('tr-TR', {day:'2-digit', month:'2-digit'})}</div>
+                <div class="note-col">${i.note || '---'}</div>
+                <div class="amt-col ${i.type === 'in' ? 'in-glow' : 'out-glow'}">
+                    ${i.type === 'in' ? '+' : '-'}${i.amount}
+                </div>
+                <div class="act-col">
+                    <button class="btn-icon" onclick="event.stopPropagation(); editEntry(${i.id})">✏️</button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); deleteEntry(${i.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('') || '<div style="text-align:center; padding:20px; color:#666;">No records found</div>';
+    }
+
+    // --- Helpers ---
+
+    function setType(type) {
+        state.currentType = type;
+        elements.btnIn.classList.toggle('active', type === 'in');
+        elements.btnOut.classList.toggle('active', type === 'out');
+    }
+
+    function clearInputs() {
+        elements.amount.value = '';
+        elements.note.value = '';
+        state.editId = null;
+    }
+
+    function showToast(msg) {
+        elements.toast.textContent = msg;
+        elements.toast.classList.add('show');
+        setTimeout(() => elements.toast.classList.remove('show'), 3000);
+    }
+
+    function showDetails(id) {
+        const i = state.history.find(item => item.id === id);
+        const date = new Date(i.date).toLocaleString();
+        document.getElementById('detailContent').innerHTML = `
+            <p><strong>Amount:</strong> ${i.amount} ${i.currency}</p>
+            <p><strong>Type:</strong> ${i.type.toUpperCase()}</p>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Note:</strong><br>${i.note || 'No note provided'}</p>
+        `;
+    }
+
+    // --- Events ---
+    elements.btnIn.onclick = () => setType('in');
+    elements.btnOut.onclick = () => setType('out');
+    document.getElementById('saveBtn').onclick = save;
+    document.getElementById('search').oninput = updateUI;
+    document.getElementById('filterDate').onchange = updateUI;
+    
+    document.addEventListener('keydown', e => {
+        if(e.key === 'Enter') save();
+        if(e.key === 'Escape') clearInputs();
     });
-    if(!found){const n=document.createElement('div');n.className='no-results';n.textContent='Eşleşen veri bulunamadı.';list.appendChild(n);}
-  }
 
-  function showNote(i){
-    const it=history[i]; if(!it)return;
-    const date=new Date(it.timestamp).toLocaleDateString('tr-TR');
-    const type=it.operation==='+'?'In':'Out';
-    const amount=`${it.value} ${it.currency}`;
-    document.getElementById('noteTitle').textContent=`Details for ${amount} (${type} on ${date})`;
-    document.getElementById('noteDisplay').textContent=it.note||'No note was added for this entry.';
-  }
-
-  function editEntry(i){
-    const it=history[i];
-    document.getElementById('amountInput').value=it.value;
-    document.getElementById('noteInput').value=it.note;
-    document.getElementById('currencySelect').value=it.currency;
-    currentCurrency=it.currency;
-    currentType=it.operation==='+'?'in':'out';
-    moneyInBtn.classList.toggle('active',currentType==='in');
-    moneyOutBtn.classList.toggle('active',currentType==='out');
-    editIndex=i;
-  }
-
-  function deleteEntry(i){
-    const it=history[i];
-    total -= it.operation==='+'?it.value:-it.value;
-    history.splice(i,1);
-    document.getElementById('total').textContent=total;
-    renderHistory();
-    saveHistoryToLocal();
-    const type=it.operation==='+'?'In':'Out';
-    const date=new Date(it.timestamp).toLocaleDateString('tr-TR');
-    showAlert(`🗑️ Entry ${it.value}${it.currency} (${type} on ${date}) deleted.`);
-  }
-
-  function saveHistoryToLocal(){localStorage.setItem('moneyTrackerData',JSON.stringify({total,currentCurrency,history}));}
-  function loadHistoryFromLocal(){
-    const d=localStorage.getItem('moneyTrackerData');
-    if(d){const p=JSON.parse(d);total=p.total||0;currentCurrency=p.currentCurrency||'₺';history=p.history||[];document.getElementById('total').textContent=total;document.getElementById('currencyDisplay').textContent=currentCurrency;renderHistory();}
-  }
-
-  async function exportExcel(){
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycbwFNUYHglkm5reoABnjstuyK-eCsDBa7pBgPlPoqicxz74JI-7ZbOV29gj6SQuu0Gy9ag/exec';
-
-    const data = history.map(it=>{
-      const d = new Date(it.timestamp);
-      return {
-        Date:d.toLocaleDateString('tr-TR'),
-        Time:d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}),
-        Type:it.operation==='+'?'In':'Out',
-        Amount:it.value+' '+it.currency,
-        Note:it.note||''
-      };
-    });
-
-    try {
-      await fetch(webAppUrl,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
-      window.open('https://docs.google.com/spreadsheets/d/1TnXPF-A8gcWiIu2Nod_tG4WlFsDzCzYeG7pokOMdVKo/edit?usp=sharing','_blank');
-      showAlert('✅ Veriler Google Sheet\'e gönderildi.');
-    } catch(e){
-      showAlert('❌ Google Sheet aktarımında hata: '+e.message);
-    }
-  }
-
-  document.getElementById('historySearch').oninput=renderHistory;
-  document.getElementById('historyDate').onchange=renderHistory;
-  document.getElementById('historyType').onchange=renderHistory;
-  document.getElementById('exportExcelBtn').onclick=exportExcel;
-
-  loadHistoryFromLocal();
-});
+    // Initialize
+    setType('in');
+    updateUI();
 </script>
 </body>
 </html>
