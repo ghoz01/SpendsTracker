@@ -2,353 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Gold Vault - Lemon Milk Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>GOLD VAULT CLOUD</title>
     <link href="https://fonts.cdnfonts.com/css/lemon-milk" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --bg-obsidian: #080808;
-            --panel-charcoal: #121212;
-            --gold-leaf: #D4AF37; 
-            --gold-bright: #F9E076;
-            --text-silver: #E0E0E0;
-            --danger: #FF4B2B;
-            --success: #00C851;
-            --font-luxury: 'LEMON MILK', sans-serif;
-            --font-main: 'Nunito', sans-serif;
-        }
-
-        body { 
-            font-family: var(--font-main); 
-            margin: 0; 
-            background: var(--bg-obsidian); 
-            color: var(--text-silver); 
-            display: flex; 
-            justify-content: center; 
-            padding: 20px; 
-        }
-
-        .dashboard { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-        @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
-
-        /* Titles using Lemon Milk */
-        h2, h3, .label, .main-save-btn, .type-btn, th { 
-            font-family: var(--font-luxury); 
-            font-weight: 400; /* Lemon Milk is naturally bold */
-            letter-spacing: 1px;
-        }
-
-        .card { 
-            background: var(--panel-charcoal); 
-            padding: 30px; 
-            border-radius: 2px; 
-            border-top: 3px solid var(--gold-leaf); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7); 
-            position: relative; 
-            transition: all 0.3s ease; 
-        }
-        
-        .card.edit-mode { 
-            border-top: 3px solid var(--gold-bright); 
-            background: #1a1a10; 
-        }
-
-        .rates-ticker { 
-            font-size: 11px; 
-            color: var(--gold-leaf); 
-            margin-bottom: 15px; 
-            display: flex; 
-            gap: 15px; 
-            background: #000; 
-            padding: 8px 12px; 
-            border-radius: 4px; 
-            border: 1px solid #222; 
-        }
-
-        /* Form Controls */
-        .entry-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        input, select { 
-            background: #000; 
-            border: 1px solid #222; 
-            color: #fff; 
-            padding: 12px; 
-            font-size: 15px; 
-            outline: none; 
-            border-radius: 4px;
-            font-family: var(--font-main);
-        }
-        input:focus { border-color: var(--gold-leaf); }
-        .full-width { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .type-btn { 
-            flex: 1; 
-            padding: 12px; 
-            cursor: pointer; 
-            border: 1px solid #444; 
-            background: transparent; 
-            color: var(--gold-leaf); 
-            font-size: 12px;
-        }
-        .type-btn.active.in { background: var(--success); color: #fff; border-color: var(--success); }
-        .type-btn.active.out { background: var(--danger); color: #fff; border-color: var(--danger); }
-        
-        .main-save-btn { 
-            width: 100%; 
-            padding: 15px; 
-            background: var(--gold-leaf); 
-            color: #000; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 14px;
-        }
-
-        /* Balance Hero using Lemon Milk */
-        .balance-hero { background: #000; padding: 40px 20px; text-align: center; border: 1px solid #1a1a1a; margin-bottom: 20px; }
-        .balance-hero .val { 
-            font-family: var(--font-luxury);
-            font-size: 38px; 
-            display: block; 
-            margin: 10px 0; 
-            color: #fff; 
-        }
-        .balance-hero .label { font-size: 10px; color: var(--gold-leaf); }
-
-        /* Journal Table */
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .history-table th { text-align: left; color: var(--gold-leaf); font-size: 10px; padding: 10px; border-bottom: 1px solid #333; }
-        .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; cursor: pointer; }
-        .history-table tr:hover { background: #1a1a1a; }
-        
-        .amt-in { color: var(--success); font-weight: 600; } 
-        .amt-out { color: var(--danger); font-weight: 600; }
-        .delete-btn { color: #444; background: none; border: none; cursor: pointer; font-size: 16px; }
-
-        .filter-label { 
-            font-family: var(--font-luxury);
-            font-size: 10px; 
-            color: var(--gold-leaf); 
-            display: block; 
-            margin-bottom: 8px; 
-            margin-top: 15px; 
-        }
-
-        .loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 12px; color: var(--gold-leaf); font-family: var(--font-luxury); }
+        :root { --bg: #080808; --panel: #121212; --gold: #D4AF37; --text: #E0E0E0; --font-l: 'LEMON MILK', sans-serif; }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .dashboard { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--panel); padding: 20px; border-top: 3px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 8px; }
+        h2, .label, .btn { font-family: var(--font-l); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-hero { background: #000; padding: 30px; text-align: center; border: 1px solid var(--gold); border-radius: 8px; }
+        .balance-hero .val { font-family: var(--font-l); font-size: 32px; color: #fff; margin: 10px 0; }
+        input, select { background: #000; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; background: var(--gold); border: none; cursor: pointer; font-weight: bold; transition: 0.3s; border-radius: 6px; margin-top: 5px; }
+        .btn:hover { box-shadow: 0 0 15px var(--gold); }
+        .sync-status { font-size: 10px; color: var(--gold); text-align: center; margin-bottom: 5px; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .history-table th { color: var(--gold); font-size: 10px; text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+        .history-table td { padding: 12px 10px; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <div class="left">
-        <div class="card" id="inputCard">
-            <div id="loader" class="loading-overlay">SYNCING MARKET DATA...</div>
-            <div class="rates-ticker">
-                <span style="font-family: var(--font-luxury);">RATES:</span>
-                <span id="usdRate">USD: --</span>
-                <span id="eurRate">EUR: --</span>
-            </div>
-            <h2 id="formTitle">NEW ENTRY</h2>
-            <div class="entry-grid">
-                <input type="date" id="dateInput">
-                <input type="number" id="amtInput" placeholder="0.00" step="0.01">
-                <select id="curInput">
-                    <option value="₺">₺ TRY</option>
-                    <option value="$">$ USD</option>
-                    <option value="€">€ EUR</option>
-                </select>
-            </div>
-            <input type="text" id="noteInput" class="full-width" placeholder="DESCRIPTION...">
-            
-            <div class="btn-group">
-                <button id="inBtn" class="type-btn active in" onclick="setType('in')">INCOME</button>
-                <button id="outBtn" class="type-btn out" onclick="setType('out')">EXPENSE</button>
-            </div>
-            
-            <button class="main-save-btn" id="saveBtn" onclick="processRecord()">VAULT ENTRY</button>
-            <button class="main-save-btn" id="cancelEdit" style="display:none; background:#333; color:#fff; margin-top:10px;" onclick="cancelEdit()">CANCEL EDIT</button>
-        </div>
-
-        <div class="card" style="margin-top: 20px;">
-            <h3>TRANSACTION JOURNAL</h3>
-            <table class="history-table">
-                <thead><tr><th>DATE</th><th>NOTE</th><th>ORIGINAL</th><th>IN TRY</th><th></th></tr></thead>
-                <tbody id="historyBody"></tbody>
-            </table>
-        </div>
+    <div id="syncStatus" class="sync-status">READY</div>
+    <div class="balance-hero">
+        <span class="label">NET ASSETS</span>
+        <div class="val" id="totalValue">0.00</div>
+        <button class="btn" style="padding: 8px; font-size: 10px; background: #222; color: #aaa;" onclick="syncFromCloud()">☁️ FORCE SYNC FROM CLOUD</button>
     </div>
 
-    <div class="right">
-        <div class="balance-hero">
-            <span class="label">FILTERED ASSETS</span>
-            <span class="val" id="totalValue">0.00</span>
-            <span class="label">TURKISH LIRA (₺)</span>
-        </div>
-        
-        <div class="card">
-            <h3>FILTERS & EXPORT</h3>
-            
-            <span class="filter-label">SEARCH</span>
-            <input type="search" id="search" class="full-width" placeholder="KEYWORD..." oninput="render()">
-            
-            <span class="filter-label">DATE RANGE</span>
-            <div style="display:flex; gap:5px; margin-bottom:15px;">
-                <input type="date" id="dateFrom" onchange="render()" style="flex:1; font-size:12px;">
-                <input type="date" id="dateTo" onchange="render()" style="flex:1; font-size:12px;">
-            </div>
+    <div class="card">
+        <h2>NEW ENTRY</h2>
+        <input type="date" id="dateInput">
+        <input type="number" id="amtInput" placeholder="0.00">
+        <select id="curInput"><option value="₺">₺ TRY</option><option value="$">$ USD</option><option value="€">€ EUR</option></select>
+        <input type="text" id="noteInput" placeholder="DESCRIPTION...">
+        <button class="btn" onclick="addAndSync()">LOG & SYNC TO CLOUD</button>
+    </div>
 
-            <button class="main-save-btn" style="background:#1a1a1a; color:var(--gold-leaf); border: 1px solid var(--gold-leaf);" onclick="exportCSV()">DOWNLOAD CSV</button>
-        </div>
+    <div class="card">
+        <h3>HISTORY</h3>
+        <table class="history-table">
+            <thead><tr><th>DATE</th><th>NOTE</th><th>AMT</th><th>₺ TOTAL</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    let records = JSON.parse(localStorage.getItem('gold_vault_v2')) || [];
-    let currentType = 'in';
-    let editModeId = null;
+    // PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+    const CLOUD_URL = "YOUR_APPS_SCRIPT_URL_HERE";
+
+    let records = JSON.parse(localStorage.getItem('gold_vault_cloud')) || [];
     let rates = { usd: 43.47, eur: 51.26 };
-    let filteredRecords = [];
 
-    async function fetchRates() {
+    function updateStatus(msg) { document.getElementById('syncStatus').textContent = msg; }
+
+    async function syncToCloud() {
+        updateStatus("SYNCING...");
         try {
-            const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/try.json');
-            const data = await response.json();
-            rates.usd = (1 / data.try.usd).toFixed(2);
-            rates.eur = (1 / data.try.eur).toFixed(2);
-            document.getElementById('usdRate').textContent = `USD: ${rates.usd} ₺`;
-            document.getElementById('eurRate').textContent = `EUR: ${rates.eur} ₺`;
-            document.getElementById('loader').style.display = 'none';
-            render();
-        } catch (e) {
-            document.getElementById('loader').textContent = "OFFLINE MODE";
-            setTimeout(() => document.getElementById('loader').style.display = 'none', 2000);
-        }
+            await fetch(CLOUD_URL, { method: 'POST', body: JSON.stringify(records) });
+            updateStatus("CLOUD SYNCED ✅");
+        } catch (e) { updateStatus("OFFLINE ⚠️"); }
     }
 
-    document.getElementById('dateInput').valueAsDate = new Date();
-
-    function setType(t) {
-        currentType = t;
-        document.getElementById('inBtn').classList.toggle('active', t === 'in');
-        document.getElementById('outBtn').classList.toggle('active', t === 'out');
+    async function syncFromCloud() {
+        updateStatus("FETCHING...");
+        try {
+            const resp = await fetch(CLOUD_URL);
+            const data = await resp.json();
+            if (data.length > 0) {
+                records = data;
+                localStorage.setItem('gold_vault_cloud', JSON.stringify(records));
+                render();
+            }
+            updateStatus("CLOUD UPDATED ✅");
+        } catch (e) { updateStatus("FETCH FAILED"); }
     }
 
-    function processRecord() {
+    function addAndSync() {
         const amt = parseFloat(document.getElementById('amtInput').value);
-        const note = document.getElementById('noteInput').value || "GENERAL";
-        const date = document.getElementById('dateInput').value;
+        if (!amt) return;
         const cur = document.getElementById('curInput').value;
-
-        if (!amt || !date) return alert("MISSING DATA");
-
-        const rateToUse = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
-
-        if (editModeId) {
-            const index = records.findIndex(r => r.id === editModeId);
-            records[index] = { ...records[index], amt, note, date, cur, type: currentType, rateAtTime: rateToUse };
-            editModeId = null;
-        } else {
-            records.unshift({ id: Date.now(), date, note, amt, cur, type: currentType, rateAtTime: rateToUse });
-        }
-
-        saveAndRefresh();
-        cancelEdit();
-    }
-
-    function editRecord(id) {
-        const r = records.find(item => item.id === id);
-        if (!r) return;
-        editModeId = id;
-        document.getElementById('amtInput').value = r.amt;
-        document.getElementById('noteInput').value = r.note;
-        document.getElementById('dateInput').value = r.date;
-        document.getElementById('curInput').value = r.cur;
-        setType(r.type);
-        document.getElementById('formTitle').textContent = "EDIT ENTRY";
-        document.getElementById('saveBtn').textContent = "UPDATE VAULT";
-        document.getElementById('cancelEdit').style.display = "block";
-        document.getElementById('inputCard').classList.add('edit-mode');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelEdit() {
-        editModeId = null;
-        document.getElementById('amtInput').value = '';
-        document.getElementById('noteInput').value = '';
-        document.getElementById('dateInput').valueAsDate = new Date();
-        document.getElementById('formTitle').textContent = "NEW ENTRY";
-        document.getElementById('saveBtn').textContent = "VAULT ENTRY";
-        document.getElementById('cancelEdit').style.display = "none";
-        document.getElementById('inputCard').classList.remove('edit-mode');
-        setType('in');
-    }
-
-    function deleteRecord(id, event) {
-        event.stopPropagation();
-        if (confirm("DELETE TRANSACTION?")) {
-            records = records.filter(r => r.id !== id);
-            saveAndRefresh();
-        }
-    }
-
-    function saveAndRefresh() {
-        localStorage.setItem('gold_vault_v2', JSON.stringify(records));
+        const rate = cur === '$' ? rates.usd : (cur === '€' ? rates.eur : 1);
+        
+        records.unshift({
+            id: Date.now(),
+            date: document.getElementById('dateInput').value,
+            note: document.getElementById('noteInput').value || "VAULT",
+            amt: amt,
+            cur: cur,
+            type: 'in',
+            rateAtTime: rate
+        });
+        
+        localStorage.setItem('gold_vault_cloud', JSON.stringify(records));
         render();
+        syncToCloud();
     }
 
     function render() {
         const body = document.getElementById('historyBody');
-        const query = document.getElementById('search').value.toLowerCase();
-        const fromDate = document.getElementById('dateFrom').value;
-        const toDate = document.getElementById('dateTo').value;
-        let grandTotalTRY = 0;
-        body.innerHTML = '';
-        
-        filteredRecords = records.filter(r => {
-            const matchesSearch = r.note.toLowerCase().includes(query) || r.cur.toLowerCase().includes(query);
-            const matchesFrom = !fromDate || r.date >= fromDate;
-            const matchesTo = !toDate || r.date <= toDate;
-            return matchesSearch && matchesFrom && matchesTo;
+        let total = 0; body.innerHTML = '';
+        records.forEach(r => {
+            const val = r.amt * r.rateAtTime;
+            total += val;
+            body.innerHTML += `<tr><td>${r.date}</td><td>${r.note}</td><td>${r.amt}${r.cur}</td><td>${val.toFixed(0)}₺</td></tr>`;
         });
-
-        filteredRecords.forEach(r => {
-            const valInTRY = r.amt * r.rateAtTime;
-            if (r.type === 'in') grandTotalTRY += valInTRY;
-            else grandTotalTRY -= valInTRY;
-
-            body.innerHTML += `
-                <tr onclick="editRecord(${r.id})">
-                    <td>${r.date}</td>
-                    <td style="color:var(--gold-leaf)">${r.note}</td>
-                    <td>${r.amt} ${r.cur}</td>
-                    <td class="${r.type === 'in' ? 'amt-in' : 'amt-out'}">
-                        ${r.type === 'in' ? '+' : '-'}${valInTRY.toLocaleString('tr-TR', {minimumFractionDigits:2})} ₺
-                    </td>
-                    <td style="text-align:right">
-                        <button class="delete-btn" onclick="deleteRecord(${r.id}, event)">✕</button>
-                    </td>
-                </tr>
-            `;
-        });
-        document.getElementById('totalValue').textContent = grandTotalTRY.toLocaleString('tr-TR', {minimumFractionDigits:2});
+        document.getElementById('totalValue').textContent = total.toLocaleString();
     }
 
-    function exportCSV() {
-        if (filteredRecords.length === 0) return alert("NO DATA");
-        let csv = "Date,Note,Currency,Original_Amount,TRY_Value,Type\n";
-        filteredRecords.forEach(r => {
-            csv += `${r.date},${r.note},${r.cur},${r.amt},${(r.amt * r.rateAtTime).toFixed(2)},${r.type}\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Gold_Vault_Export.csv`;
-        a.click();
-    }
-
-    fetchRates();
+    document.getElementById('dateInput').valueAsDate = new Date();
+    render();
+    if(CLOUD_URL !== "https://script.google.com/macros/s/AKfycbwIM9N5MTA3xOGNphGIaPOAyfyK08ZVWZ9I-iVfCYm8vwRL090ayt7cDNnyoTbYljn6Mw/exec") syncFromCloud();
 </script>
 </body>
 </html>
